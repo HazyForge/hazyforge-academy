@@ -4,7 +4,7 @@ helmChartPath: charts/hazyforge-academy
 image:
   repository: ghcr.io/hazyforge/hazyforge-academy
   pullPolicy: Always
-  tag: sha-4a0f058
+  tag: sha-0ef8068
 imagePullSecrets:
   - name: ghcr-creds
 resources:
