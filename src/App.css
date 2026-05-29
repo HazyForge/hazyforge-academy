@@ -289,12 +289,14 @@ h3 {
 
 .program-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
 }
 
 .program-card,
-.workshop-panel {
+.ai-card,
+.workshop-panel,
+.homeschool-panel {
   border: 1px solid rgba(233, 253, 255, 0.12);
   border-radius: 8px;
   background:
@@ -308,16 +310,42 @@ h3 {
   padding: 24px;
 }
 
-.program-card svg {
+.program-card svg,
+.ai-card svg {
   margin-bottom: 26px;
   color: var(--amber);
 }
 
 .program-card p,
+.ai-card p,
+.homeschool-copy p,
 .advanced-band p,
 .contact-section p {
   color: var(--muted);
   line-height: 1.7;
+}
+
+.ai-section {
+  border-top: 1px solid rgba(63, 207, 143, 0.18);
+}
+
+.ai-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ai-card {
+  min-height: 230px;
+  padding: 26px;
+}
+
+.ai-card:nth-child(2) svg {
+  color: var(--cyan);
+}
+
+.ai-card:nth-child(3) svg {
+  color: var(--green);
 }
 
 .split-section {
@@ -347,7 +375,8 @@ h3 {
   flex: 0 0 auto;
 }
 
-.workshop-panel {
+.workshop-panel,
+.homeschool-panel {
   padding: 28px;
 }
 
@@ -382,6 +411,24 @@ h3 {
   content: counter(steps, decimal-leading-zero);
   color: var(--amber);
   font-family: "Space Grotesk", system-ui, sans-serif;
+}
+
+.homeschool-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.78fr);
+  gap: 48px;
+  align-items: center;
+  border-top: 1px solid rgba(243, 185, 95, 0.2);
+}
+
+.homeschool-copy p {
+  max-width: 720px;
+  margin: 24px 0 0;
+  font-size: 1.03rem;
+}
+
+.compact-list {
+  margin-top: 24px;
 }
 
 .advanced-band,
@@ -433,7 +480,9 @@ h3 {
 
   .signal-strip,
   .program-grid,
+  .ai-grid,
   .split-section,
+  .homeschool-section,
   .advanced-band,
   .contact-section {
     grid-template-columns: 1fr;
