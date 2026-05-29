@@ -1,0 +1,141 @@
+require "shellwords"
+
+default_platform(:ios)
+
+def load_optional_local_env_file(path)
+  return unless File.exist?(path)
+
+  File.foreach(path) do |line|
+    stripped = line.strip
+    next if stripped.empty? || stripped.start_with?("#")
+
+    key, value = stripped.split("=", 2)
+    next if key.to_s.empty? || value.nil?
+    next unless ENV[key].to_s.empty?
+
+    normalized = value.strip
+    if normalized.start_with?('"') && normalized.end_with?('"')
+      normalized = normalized[1...-1]
+    elsif normalized.start_with?("'") && normalized.end_with?("'")
+      normalized = normalized[1...-1]
+    end
+
+    ENV[key] = normalized
+  end
+end
+
+def optional_ios_build_keychain_env_file
+  override = ENV["HAZY_IOS_BUILD_KEYCHAIN_ENV_FILE"].to_s
+  return override unless override.empty?
+
+  File.join(Dir.home, ".config/hazyforge-academy/ios-build-keychain.env")
+end
+
+def configure_optional_ios_build_keychain
+  load_optional_local_env_file(optional_ios_build_keychain_env_file)
+
+  keychain_path = ENV["HAZY_IOS_BUILD_KEYCHAIN_PATH"].to_s
+  keychain_password = ENV["HAZY_IOS_BUILD_KEYCHAIN_PASSWORD"].to_s
+
+  return nil if keychain_path.empty? || keychain_password.empty?
+
+  unlock_keychain(
+    path: keychain_path,
+    password: keychain_password,
+    add_to_search_list: true,
+    set_default: false
+  )
+  sh("security set-keychain-settings -lut 21600 #{keychain_path.shellescape}", log: false)
+
+  %(OTHER_CODE_SIGN_FLAGS="--keychain #{keychain_path}")
+end
+
+def load_app_store_connect_api_key
+  key_id = ENV["APP_STORE_CONNECT_KEY_ID"]
+  issuer_id = ENV["APP_STORE_CONNECT_ISSUER_ID"]
+
+  UI.user_error!("APP_STORE_CONNECT_KEY_ID is required.") if key_id.to_s.empty?
+  UI.user_error!("APP_STORE_CONNECT_ISSUER_ID is required.") if issuer_id.to_s.empty?
+
+  if ENV["APP_STORE_CONNECT_KEY_PATH"].to_s != ""
+    return app_store_connect_api_key(
+      key_id: key_id,
+      issuer_id: issuer_id,
+      key_filepath: ENV["APP_STORE_CONNECT_KEY_PATH"]
+    )
+  end
+
+  if ENV["APP_STORE_CONNECT_KEY_CONTENT"].to_s != ""
+    return app_store_connect_api_key(
+      key_id: key_id,
+      issuer_id: issuer_id,
+      key_content: ENV["APP_STORE_CONNECT_KEY_CONTENT"],
+      is_key_content_base64: ENV["APP_STORE_CONNECT_KEY_CONTENT_BASE64"] == "1"
+    )
+  end
+
+  UI.user_error!("Set APP_STORE_CONNECT_KEY_PATH or APP_STORE_CONNECT_KEY_CONTENT for App Store Connect authentication.")
+end
+
+def with_local_release_metadata_rollback(paths)
+  snapshots = paths.select { |path| File.exist?(path) }.to_h do |path|
+    [path, File.binread(path)]
+  end
+
+  yield
+rescue StandardError
+  snapshots.each do |path, content|
+    File.binwrite(path, content)
+  end
+  raise
+end
+
+platform :ios do
+  desc "Build and upload a TestFlight release"
+  lane :testflight do |options|
+    version = options[:version].to_s
+    UI.user_error!("Pass version: x.y.z") if version.empty?
+
+    api_key = load_app_store_connect_api_key
+    build_keychain_xcargs = configure_optional_ios_build_keychain
+
+    with_local_release_metadata_rollback([
+      "apps/mobile/ios/HazyForgeAcademy.xcodeproj/project.pbxproj",
+      "apps/mobile/ios/HazyForgeAcademy/Info.plist",
+      "apps/mobile/app.json",
+      "apps/mobile/package.json"
+    ]) do
+      increment_version_number(
+        xcodeproj: "apps/mobile/ios/HazyForgeAcademy.xcodeproj",
+        version_number: version
+      )
+
+      increment_build_number(
+        xcodeproj: "apps/mobile/ios/HazyForgeAcademy.xcodeproj"
+      )
+
+      build_app(
+        workspace: "apps/mobile/ios/HazyForgeAcademy.xcworkspace",
+        scheme: "HazyForgeAcademy",
+        configuration: "Release",
+        clean: true,
+        export_method: "app-store",
+        xcargs: build_keychain_xcargs,
+        output_directory: "apps/mobile/ios/build/export",
+        output_name: "hazyforge-academy.ipa",
+        export_options: {
+          method: "app-store",
+          signingStyle: "automatic",
+          stripSwiftSymbols: true,
+          uploadBitcode: false
+        }
+      )
+
+      upload_to_testflight(
+        api_key: api_key,
+        ipa: "apps/mobile/ios/build/export/hazyforge-academy.ipa",
+        skip_waiting_for_build_processing: true
+      )
+    end
+  end
+end

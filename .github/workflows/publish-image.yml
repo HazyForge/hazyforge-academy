@@ -3,7 +3,7 @@ name: publish-image
 on:
   push:
     branches:
-      - main
+      - master
   workflow_dispatch:
 
 permissions:
@@ -30,7 +30,7 @@ jobs:
         with:
           images: ghcr.io/hazyforge/hazyforge-academy
           tags: |
-            type=raw,value=main
+            type=raw,value=master
             type=sha,prefix=sha-
 
       - uses: docker/build-push-action@v6

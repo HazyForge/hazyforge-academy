@@ -3,4 +3,4 @@ name: hazyforge-academy
 description: Hazy Forge teaching site for computer literacy and programming lessons
 type: application
 version: 0.1.0
-appVersion: "main"
+appVersion: "master"
