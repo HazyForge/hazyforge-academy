@@ -242,11 +242,12 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = expo;
-				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_BITCODE = NO;
+				buildSettings = {
+					ASSETCATALOG_COMPILER_APPICON_NAME = expo;
+					CLANG_ENABLE_MODULES = YES;
+					DEVELOPMENT_TEAM = CS54B27626;
+					CURRENT_PROJECT_VERSION = 1;
+					ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"FB_SONARKIT_ENABLED=1",
@@ -277,11 +278,12 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = expo;
-				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				INFOPLIST_FILE = HazyForgeAcademy/Info.plist;
+				buildSettings = {
+					ASSETCATALOG_COMPILER_APPICON_NAME = expo;
+					CLANG_ENABLE_MODULES = YES;
+					DEVELOPMENT_TEAM = CS54B27626;
+					CURRENT_PROJECT_VERSION = 1;
+					INFOPLIST_FILE = HazyForgeAcademy/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
