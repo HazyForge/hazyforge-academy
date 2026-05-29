@@ -50,6 +50,15 @@ def configure_optional_ios_build_keychain
   %(OTHER_CODE_SIGN_FLAGS="--keychain #{keychain_path}")
 end
 
+def combine_xcargs(*parts)
+  parts
+    .compact
+    .map(&:to_s)
+    .map(&:strip)
+    .reject(&:empty?)
+    .join(" ")
+end
+
 def load_ios_release_env
   override = ENV["HAZY_IOS_RELEASE_ENV_FILE"].to_s
   path = override.empty? ? File.join(Dir.home, ".config/hazyforge-academy/ios-release.env") : override
@@ -111,6 +120,7 @@ platform :ios do
 
     api_key = load_app_store_connect_api_key
     build_keychain_xcargs = configure_optional_ios_build_keychain
+    provisioning_xcargs = combine_xcargs(build_keychain_xcargs, "-allowProvisioningUpdates")
     require_ios_release_env
 
     with_local_release_metadata_rollback([
@@ -139,7 +149,8 @@ platform :ios do
         configuration: "Release",
         clean: true,
         export_method: "app-store",
-        xcargs: build_keychain_xcargs,
+        xcargs: provisioning_xcargs,
+        export_xcargs: "-allowProvisioningUpdates",
         output_directory: "apps/mobile/ios/build/export",
         output_name: "hazyforge-academy.ipa",
         export_options: {
