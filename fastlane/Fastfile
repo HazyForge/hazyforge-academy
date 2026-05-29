@@ -45,8 +45,9 @@ def configure_optional_ios_build_keychain
     path: keychain_path,
     password: keychain_password,
     add_to_search_list: true,
-    set_default: false
+    set_default: true
   )
+  sh("security default-keychain -d user -s #{keychain_path.shellescape}", log: false)
   sh("security set-keychain-settings -lut 21600 #{keychain_path.shellescape}", log: false)
 
   %(OTHER_CODE_SIGN_FLAGS="--keychain #{keychain_path}")
@@ -179,7 +180,6 @@ platform :ios do
           clean: true,
           export_method: "app-store",
           xcargs: archive_xcargs,
-          export_xcargs: provisioning_xcargs,
           output_directory: "apps/mobile/ios/build/export",
           output_name: "hazyforge-academy.ipa",
           export_options: {
