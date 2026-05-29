@@ -1,0 +1,27 @@
+# Appset Values
+helmChartPath: charts/hazyforge-academy
+# Helm Values
+image:
+  repository: ghcr.io/hazyforge/hazyforge-academy
+  pullPolicy: Always
+  tag: main
+imagePullSecrets:
+  - name: ghcr-creds
+resources:
+  requests:
+    cpu: 25m
+    memory: 64Mi
+  limits:
+    cpu: 300m
+    memory: 192Mi
+service:
+  port: 80
+  containerPort: 80
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: http
