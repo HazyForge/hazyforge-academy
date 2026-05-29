@@ -1,4 +1,6 @@
 require "shellwords"
+require "base64"
+require "tempfile"
 
 default_platform(:ios)
 
@@ -99,6 +101,30 @@ def load_app_store_connect_api_key
   UI.user_error!("Set APP_STORE_CONNECT_KEY_PATH or APP_STORE_CONNECT_KEY_CONTENT for App Store Connect authentication.")
 end
 
+def write_temporary_app_store_connect_key_file
+  return [ENV["APP_STORE_CONNECT_KEY_PATH"], nil] if ENV["APP_STORE_CONNECT_KEY_PATH"].to_s != ""
+
+  key_content = ENV["APP_STORE_CONNECT_KEY_CONTENT"].to_s
+  UI.user_error!("APP_STORE_CONNECT_KEY_CONTENT is required for Xcode provisioning authentication.") if key_content.empty?
+
+  normalized = ENV["APP_STORE_CONNECT_KEY_CONTENT_BASE64"] == "1" ? Base64.decode64(key_content) : key_content
+  file = Tempfile.new(["AuthKey_", ".p8"])
+  file.write(normalized)
+  file.close
+  File.chmod(0o600, file.path)
+
+  [file.path, file]
+end
+
+def xcode_provisioning_xcargs(key_path)
+  combine_xcargs(
+    "-allowProvisioningUpdates",
+    "-authenticationKeyPath #{key_path.shellescape}",
+    "-authenticationKeyID #{ENV.fetch("APP_STORE_CONNECT_KEY_ID").shellescape}",
+    "-authenticationKeyIssuerID #{ENV.fetch("APP_STORE_CONNECT_ISSUER_ID").shellescape}"
+  )
+end
+
 def with_local_release_metadata_rollback(paths)
   snapshots = paths.select { |path| File.exist?(path) }.to_h do |path|
     [path, File.binread(path)]
@@ -120,52 +146,57 @@ platform :ios do
 
     api_key = load_app_store_connect_api_key
     build_keychain_xcargs = configure_optional_ios_build_keychain
-    provisioning_xcargs = combine_xcargs(build_keychain_xcargs, "-allowProvisioningUpdates")
+    xcode_key_path, xcode_key_file = write_temporary_app_store_connect_key_file
+    provisioning_xcargs = combine_xcargs(build_keychain_xcargs, xcode_provisioning_xcargs(xcode_key_path))
     require_ios_release_env
 
-    with_local_release_metadata_rollback([
-      "apps/mobile/ios/HazyForgeAcademy.xcodeproj/project.pbxproj",
-      "apps/mobile/ios/HazyForgeAcademy/Info.plist",
-      "apps/mobile/app.json",
-      "apps/mobile/package.json"
-    ]) do
-      cocoapods(
-        podfile: "apps/mobile/ios/Podfile",
-        clean_install: false
-      )
+    begin
+      with_local_release_metadata_rollback([
+        "apps/mobile/ios/HazyForgeAcademy.xcodeproj/project.pbxproj",
+        "apps/mobile/ios/HazyForgeAcademy/Info.plist",
+        "apps/mobile/app.json",
+        "apps/mobile/package.json"
+      ]) do
+        cocoapods(
+          podfile: "apps/mobile/ios/Podfile",
+          clean_install: false
+        )
 
-      increment_version_number(
-        xcodeproj: "apps/mobile/ios/HazyForgeAcademy.xcodeproj",
-        version_number: version
-      )
+        increment_version_number(
+          xcodeproj: "apps/mobile/ios/HazyForgeAcademy.xcodeproj",
+          version_number: version
+        )
 
-      increment_build_number(
-        xcodeproj: "apps/mobile/ios/HazyForgeAcademy.xcodeproj"
-      )
+        increment_build_number(
+          xcodeproj: "apps/mobile/ios/HazyForgeAcademy.xcodeproj"
+        )
 
-      build_app(
-        workspace: "apps/mobile/ios/HazyForgeAcademy.xcworkspace",
-        scheme: "HazyForgeAcademy",
-        configuration: "Release",
-        clean: true,
-        export_method: "app-store",
-        xcargs: provisioning_xcargs,
-        export_xcargs: "-allowProvisioningUpdates",
-        output_directory: "apps/mobile/ios/build/export",
-        output_name: "hazyforge-academy.ipa",
-        export_options: {
-          method: "app-store",
-          signingStyle: "automatic",
-          stripSwiftSymbols: true,
-          uploadBitcode: false
-        }
-      )
+        build_app(
+          workspace: "apps/mobile/ios/HazyForgeAcademy.xcworkspace",
+          scheme: "HazyForgeAcademy",
+          configuration: "Release",
+          clean: true,
+          export_method: "app-store",
+          xcargs: provisioning_xcargs,
+          export_xcargs: provisioning_xcargs,
+          output_directory: "apps/mobile/ios/build/export",
+          output_name: "hazyforge-academy.ipa",
+          export_options: {
+            method: "app-store",
+            signingStyle: "automatic",
+            stripSwiftSymbols: true,
+            uploadBitcode: false
+          }
+        )
 
-      upload_to_testflight(
-        api_key: api_key,
-        ipa: "apps/mobile/ios/build/export/hazyforge-academy.ipa",
-        skip_waiting_for_build_processing: true
-      )
+        upload_to_testflight(
+          api_key: api_key,
+          ipa: "apps/mobile/ios/build/export/hazyforge-academy.ipa",
+          skip_waiting_for_build_processing: true
+        )
+      end
+    ensure
+      xcode_key_file&.unlink
     end
   end
 end
