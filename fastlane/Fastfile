@@ -76,6 +76,8 @@ def require_ios_release_env
 end
 
 def load_app_store_connect_api_key
+  ENV.delete("APP_STORE_CONNECT_KEY_PATH") if ENV["APP_STORE_CONNECT_KEY_CONTENT"].to_s != ""
+
   key_id = ENV["APP_STORE_CONNECT_KEY_ID"]
   issuer_id = ENV["APP_STORE_CONNECT_ISSUER_ID"]
 
