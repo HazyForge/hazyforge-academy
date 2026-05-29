@@ -50,6 +50,19 @@ def configure_optional_ios_build_keychain
   %(OTHER_CODE_SIGN_FLAGS="--keychain #{keychain_path}")
 end
 
+def load_ios_release_env
+  override = ENV["HAZY_IOS_RELEASE_ENV_FILE"].to_s
+  path = override.empty? ? File.join(Dir.home, ".config/hazyforge-academy/ios-release.env") : override
+
+  load_optional_local_env_file(path)
+end
+
+def require_ios_release_env
+  load_ios_release_env
+
+  UI.user_error!("EXPO_PUBLIC_ZITADEL_CLIENT_ID is required for the Academy iOS release build.") if ENV["EXPO_PUBLIC_ZITADEL_CLIENT_ID"].to_s.empty?
+end
+
 def load_app_store_connect_api_key
   key_id = ENV["APP_STORE_CONNECT_KEY_ID"]
   issuer_id = ENV["APP_STORE_CONNECT_ISSUER_ID"]
@@ -98,6 +111,7 @@ platform :ios do
 
     api_key = load_app_store_connect_api_key
     build_keychain_xcargs = configure_optional_ios_build_keychain
+    require_ios_release_env
 
     with_local_release_metadata_rollback([
       "apps/mobile/ios/HazyForgeAcademy.xcodeproj/project.pbxproj",
@@ -105,6 +119,11 @@ platform :ios do
       "apps/mobile/app.json",
       "apps/mobile/package.json"
     ]) do
+      cocoapods(
+        podfile: "apps/mobile/ios/Podfile",
+        clean_install: false
+      )
+
       increment_version_number(
         xcodeproj: "apps/mobile/ios/HazyForgeAcademy.xcodeproj",
         version_number: version
