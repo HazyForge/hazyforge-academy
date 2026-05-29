@@ -13,3 +13,4 @@ minimumReleaseAgeExclude:
   - expo-router@56.2.8
   - expo@56.0.8
   - expo-notifications@56.0.15
+  - expo-auth-session@56.0.13

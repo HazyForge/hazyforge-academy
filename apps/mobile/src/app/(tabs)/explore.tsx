@@ -40,7 +40,7 @@ export default function ClassesScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <Link href="/" asChild>
+          <Link href="/(tabs)" asChild>
             <Pressable style={styles.backButton}>
               <Text style={styles.backButtonText}>Home</Text>
             </Pressable>

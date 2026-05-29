@@ -10,6 +10,7 @@
     "build:web": "pnpm --filter @hazyforge-academy/web build",
     "preview": "pnpm --filter @hazyforge-academy/web preview",
     "android": "pnpm --filter @hazyforge-academy/mobile android",
-    "ios": "pnpm --filter @hazyforge-academy/mobile ios"
+    "ios": "pnpm --filter @hazyforge-academy/mobile ios",
+    "ios:testflight": "bundle exec fastlane ios testflight"
   }
 }

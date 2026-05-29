@@ -1,8 +1,11 @@
-import { DarkTheme, router, ThemeProvider, type Href } from 'expo-router';
+import { DarkTheme, router, Stack, ThemeProvider, useRouter, useSegments } from 'expo-router';
+import type { Href } from 'expo-router';
 import * as Notifications from 'expo-notifications';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 
-import AppTabs from '@/components/app-tabs';
+import { AuthProvider, useAuth } from '@/contexts/auth-context';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -35,12 +38,66 @@ function useNotificationRouting() {
   }, []);
 }
 
-export default function TabLayout() {
+function RouteGuard() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const segments = useSegments();
+  const routeRouter = useRouter();
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    const routeSegments = [...segments] as string[];
+    const inAuthGroup = routeSegments[0] === '(auth)';
+    const inOAuthRedirectRoute =
+      routeSegments[0] === 'auth' &&
+      (routeSegments[1] === 'callback' || routeSegments[1] === 'logout');
+
+    if (inOAuthRedirectRoute) return;
+
+    if (!isAuthenticated && !inAuthGroup) {
+      routeRouter.replace('/(auth)/login');
+    } else if (isAuthenticated && inAuthGroup) {
+      routeRouter.replace('/(tabs)');
+    }
+  }, [isAuthenticated, isLoading, routeRouter, segments]);
+
+  if (!isLoading) return null;
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#02070B',
+      }}>
+      <ActivityIndicator size="large" color="#3FCF8F" />
+    </View>
+  );
+}
+
+function RootNavigator() {
   useNotificationRouting();
 
   return (
     <ThemeProvider value={DarkTheme}>
-      <AppTabs />
+      <RouteGuard />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="auth/callback" />
+        <Stack.Screen name="auth/logout" />
+      </Stack>
+      <StatusBar style="light" />
     </ThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <RootNavigator />
+    </AuthProvider>
   );
 }
