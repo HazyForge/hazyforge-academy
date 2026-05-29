@@ -147,7 +147,8 @@ platform :ios do
     api_key = load_app_store_connect_api_key
     build_keychain_xcargs = configure_optional_ios_build_keychain
     xcode_key_path, xcode_key_file = write_temporary_app_store_connect_key_file
-    provisioning_xcargs = combine_xcargs(build_keychain_xcargs, xcode_provisioning_xcargs(xcode_key_path))
+    provisioning_xcargs = xcode_provisioning_xcargs(xcode_key_path)
+    archive_xcargs = combine_xcargs(build_keychain_xcargs, provisioning_xcargs)
     require_ios_release_env
 
     begin
@@ -177,7 +178,7 @@ platform :ios do
           configuration: "Release",
           clean: true,
           export_method: "app-store",
-          xcargs: provisioning_xcargs,
+          xcargs: archive_xcargs,
           export_xcargs: provisioning_xcargs,
           output_directory: "apps/mobile/ios/build/export",
           output_name: "hazyforge-academy.ipa",
