@@ -4,6 +4,7 @@ import {
   Bot,
   BrainCircuit,
   CalendarDays,
+  CheckCircle2,
   Cpu,
   ExternalLink,
   GraduationCap,
@@ -11,35 +12,59 @@ import {
   HouseWifi,
   Laptop,
   MonitorCog,
+  MonitorSmartphone,
   ShieldCheck,
-  Sparkles,
   TerminalSquare,
+  UsersRound,
 } from "lucide-react";
 
 const programs = [
   {
     title: "Computer Fluency",
-    detail: "Files, accounts, browsers, shortcuts, safety, and daily confidence.",
+    detail: "Confident with everyday computer skills.",
+    label: "Foundation",
     icon: Laptop,
   },
   {
     title: "Build The Machine",
-    detail: "Parts, compatibility, assembly, upgrades, and troubleshooting.",
+    detail: "Assemble. Configure. Understand your PC.",
+    label: "Hands-on",
     icon: Cpu,
   },
   {
     title: "Terminal Basics",
-    detail: "Folders, commands, editors, scripts, git, and practical shell habits.",
+    detail: "Navigate systems like a power user.",
+    label: "Foundation",
     icon: TerminalSquare,
   },
   {
     title: "First Website",
-    detail: "HTML, CSS, deployment, domains, and a real page students can share.",
+    detail: "Code and launch your first website.",
+    label: "Build",
     icon: MonitorCog,
   },
   {
     title: "AI Foundations",
-    detail: "Chatbots, prompting, model limits, research habits, and practical AI-assisted projects.",
+    detail: "Use AI tools effectively and responsibly.",
+    label: "Foundation",
+    icon: BrainCircuit,
+  },
+];
+
+const signals = [
+  {
+    title: "One-on-one or small group",
+    detail: "Personalized instruction that adapts.",
+    icon: UsersRound,
+  },
+  {
+    title: "Real machines, real projects",
+    detail: "Hands-on builds. Tangible results.",
+    icon: MonitorSmartphone,
+  },
+  {
+    title: "AI taught with judgment",
+    detail: "Powerful tools. Thoughtful use.",
     icon: BrainCircuit,
   },
 ];
@@ -118,7 +143,7 @@ export default function App() {
           alt="Hands-on computer learning workbench with PC parts, laptops, and notebooks"
         />
         <div className="hero-shade" />
-        <header className="topbar" aria-label="Primary">
+        <header className="topbar" aria-label="Primary navigation">
           <a className="brand" href="#top" aria-label="Hazy Forge Academy home">
             <HazyForgeLogo />
             <span>
@@ -131,7 +156,7 @@ export default function App() {
             <a href="#ai">AI</a>
             <a href="#homeschool">Homeschool</a>
             <a href="#format">Format</a>
-            <a href="#contact">Contact</a>
+            <a className="nav-action" href="#contact">Book a session</a>
           </nav>
         </header>
 
@@ -158,24 +183,38 @@ export default function App() {
       </section>
 
       <section className="signal-strip" aria-label="Teaching approach">
-        {["One-on-one or small group", "Real machines, real projects", "AI taught with judgment"].map(
-          (item) => (
-            <span key={item}>{item}</span>
-          ),
-        )}
+        {signals.map(({ title, detail, icon: Icon }) => (
+          <article key={title}>
+            <Icon size={30} aria-hidden="true" />
+            <span>
+              <strong>{title}</strong>
+              <small>{detail}</small>
+            </span>
+          </article>
+        ))}
       </section>
 
       <section id="programs" className="section programs-section">
         <div className="section-heading">
-          <p className="eyebrow">Start concrete, add AI early, then level up</p>
-          <h2>Lesson paths that turn curiosity into usable technology skill.</h2>
+          <div>
+            <p className="eyebrow">Lesson paths</p>
+            <h2>Practical skills. Real outcomes.</h2>
+          </div>
+          <a href="#contact" className="section-link">
+            View all paths
+            <ArrowRight size={17} aria-hidden="true" />
+          </a>
         </div>
         <div className="program-grid">
-          {programs.map(({ title, detail, icon: Icon }) => (
+          {programs.map(({ title, detail, label, icon: Icon }) => (
             <article className="program-card" key={title}>
               <Icon size={28} aria-hidden="true" />
               <h3>{title}</h3>
               <p>{detail}</p>
+              <a href="#contact">
+                {label}
+                <ArrowRight size={17} aria-hidden="true" />
+              </a>
             </article>
           ))}
         </div>
@@ -204,7 +243,7 @@ export default function App() {
           <ul className="check-list">
             {tracks.map((track) => (
               <li key={track}>
-                <Sparkles size={16} aria-hidden="true" />
+                <CheckCircle2 size={16} aria-hidden="true" />
                 {track}
               </li>
             ))}
