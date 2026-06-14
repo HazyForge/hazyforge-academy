@@ -1,79 +1,77 @@
 import { Link } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const CAL_URL = 'https://cal.hazyforge.io/palehazy/30min';
+import { academyClasses, classPassState } from '@/constants/academy-product';
 
-const classes = [
-  {
-    name: 'First Computer Confidence',
-    format: '1:1 or family session',
-    outcome: 'A student can manage files, accounts, browsers, safety, and daily machine habits.',
-  },
-  {
-    name: 'Build Your First PC',
-    format: 'workshop series',
-    outcome: 'A parts list, assembly plan, build day, and troubleshooting notes.',
-  },
-  {
-    name: 'AI Builder Lab',
-    format: 'project sprint',
-    outcome: 'A practical prototype built with AI assistance and verification habits.',
-  },
-  {
-    name: 'Ship A First Website',
-    format: 'portfolio track',
-    outcome: 'HTML, CSS, deployment, domain basics, and a live page students can share.',
-  },
-];
-
-const reminders = [
-  'Class confirmations and schedule changes',
-  'Prep checklist before a build or coding session',
-  'Practice prompts between lessons',
-  'Follow-up notes after class',
-];
+const passRows = [
+  ['billing', 'Stripe or app-store entitlement later'],
+  ['source', 'Academy backend should return class_pass.active'],
+  ['fallback', 'locked tracks stay visible but blocked'],
+] as const;
 
 export default function ClassesScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
+          <Text style={styles.kicker}>Paid access</Text>
+          <Text style={styles.title}>Classes stay visible, but paid tracks require a class pass.</Text>
+        </View>
+
+        <View style={styles.passPanel}>
+          <View>
+            <Text style={styles.passLabel}>Current pass</Text>
+            <Text style={styles.passValue}>{classPassState.label}</Text>
+          </View>
           <Link href="/(tabs)" asChild>
-            <Pressable style={styles.backButton}>
-              <Text style={styles.backButtonText}>Home</Text>
+            <Pressable style={styles.passButton}>
+              <Text style={styles.passButtonText}>Book fit call</Text>
             </Pressable>
           </Link>
-          <Text style={styles.kicker}>Classes and reminders</Text>
-          <Text style={styles.title}>Pick a track, then make the schedule real.</Text>
         </View>
 
         <View style={styles.classList}>
-          {classes.map((item) => (
-            <View key={item.name} style={styles.classCard}>
-              <View style={styles.classTopline}>
-                <Text style={styles.className}>{item.name}</Text>
-                <Text style={styles.classFormat}>{item.format}</Text>
+          {academyClasses.map((item) => {
+            const locked = item.requiresPass && !classPassState.hasActivePass;
+
+            return (
+              <View key={item.id} style={styles.classPanel}>
+                <View style={[styles.classRail, { backgroundColor: item.accent }]} />
+                <View style={styles.classContent}>
+                  <View style={styles.classHeader}>
+                    <View style={styles.classTitleGroup}>
+                      <Text style={styles.className}>{item.name}</Text>
+                      <Text style={styles.classFormat}>{item.format}</Text>
+                    </View>
+                    <View style={[styles.accessBadge, locked && styles.lockedBadge]}>
+                      <Text style={[styles.accessBadgeText, locked && styles.lockedBadgeText]}>
+                        {locked ? 'locked' : 'open'}
+                      </Text>
+                    </View>
+                  </View>
+                  <Text style={styles.classOutcome}>{item.outcome}</Text>
+                  <View style={styles.classFooter}>
+                    <Text style={styles.classSchedule}>{item.schedule}</Text>
+                    <Text style={styles.classAction}>
+                      {locked ? 'upgrade required' : 'available after scheduling'}
+                    </Text>
+                  </View>
+                </View>
               </View>
-              <Text style={styles.classOutcome}>{item.outcome}</Text>
+            );
+          })}
+        </View>
+
+        <View style={styles.contractPanel}>
+          <Text style={styles.panelTitle}>Entitlement contract</Text>
+          {passRows.map(([key, value]) => (
+            <View key={key} style={styles.contractRow}>
+              <Text style={styles.contractKey}>{key}</Text>
+              <Text style={styles.contractValue}>{value}</Text>
             </View>
           ))}
         </View>
-
-        <View style={styles.panel}>
-          <Text style={styles.panelTitle}>Notification plan</Text>
-          {reminders.map((item) => (
-            <View key={item} style={styles.reminderRow}>
-              <View style={styles.reminderDot} />
-              <Text style={styles.reminderText}>{item}</Text>
-            </View>
-          ))}
-        </View>
-
-        <Pressable style={styles.primaryButton} onPress={() => WebBrowser.openBrowserAsync(CAL_URL)}>
-          <Text style={styles.primaryButtonText}>Schedule on Cal</Text>
-        </Pressable>
       </SafeAreaView>
     </ScrollView>
   );
@@ -88,31 +86,17 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   safeArea: {
-    paddingHorizontal: 20,
     gap: 16,
+    paddingHorizontal: 18,
   },
   header: {
-    gap: 14,
+    gap: 10,
     paddingTop: 28,
   },
-  backButton: {
-    alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderColor: 'rgba(233, 253, 255, 0.16)',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-  },
-  backButtonText: {
-    color: '#E9FDFF',
-    fontSize: 12,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-  },
   kicker: {
-    color: '#3FCF8F',
-    fontSize: 13,
-    fontWeight: '800',
+    color: '#F3B95F',
+    fontSize: 12,
+    fontWeight: '900',
     textTransform: 'uppercase',
   },
   title: {
@@ -123,78 +107,163 @@ const styles = StyleSheet.create({
     lineHeight: 36,
     textTransform: 'uppercase',
   },
-  classList: {
-    gap: 12,
-  },
-  classCard: {
-    gap: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(233, 253, 255, 0.12)',
+  passPanel: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(243, 185, 95, 0.09)',
+    borderColor: 'rgba(243, 185, 95, 0.28)',
     borderRadius: 8,
-    backgroundColor: 'rgba(6, 19, 22, 0.88)',
-    padding: 18,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'space-between',
+    padding: 16,
   },
-  classTopline: {
-    gap: 6,
+  passLabel: {
+    color: '#F3B95F',
+    fontSize: 11,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  passValue: {
+    color: '#E9FDFF',
+    fontSize: 18,
+    fontWeight: '900',
+    marginTop: 3,
+    textTransform: 'uppercase',
+  },
+  passButton: {
+    backgroundColor: '#E9FDFF',
+    borderRadius: 8,
+    justifyContent: 'center',
+    minHeight: 42,
+    paddingHorizontal: 13,
+  },
+  passButtonText: {
+    color: '#02070B',
+    fontSize: 11,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  classList: {
+    gap: 10,
+  },
+  classPanel: {
+    backgroundColor: 'rgba(6, 19, 22, 0.94)',
+    borderColor: 'rgba(233, 253, 255, 0.13)',
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 12,
+    minHeight: 138,
+    padding: 14,
+  },
+  classRail: {
+    borderRadius: 8,
+    width: 4,
+  },
+  classContent: {
+    flex: 1,
+    gap: 12,
+  },
+  classHeader: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: 10,
+    justifyContent: 'space-between',
+  },
+  classTitleGroup: {
+    flex: 1,
+    gap: 5,
   },
   className: {
     color: '#E9FDFF',
     fontSize: 18,
     fontWeight: '900',
+    lineHeight: 22,
+    textTransform: 'uppercase',
   },
   classFormat: {
     color: '#50D8FA',
-    fontSize: 12,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-  },
-  classOutcome: {
-    color: 'rgba(233, 253, 255, 0.7)',
-    fontSize: 14,
-    lineHeight: 22,
-  },
-  panel: {
-    gap: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(243, 185, 95, 0.22)',
-    borderRadius: 8,
-    backgroundColor: 'rgba(243, 185, 95, 0.08)',
-    padding: 18,
-  },
-  panelTitle: {
-    color: '#E9FDFF',
-    fontSize: 17,
+    fontSize: 11,
     fontWeight: '900',
     textTransform: 'uppercase',
   },
-  reminderRow: {
-    flexDirection: 'row',
-    gap: 12,
-    alignItems: 'center',
-  },
-  reminderDot: {
-    width: 8,
-    height: 8,
+  accessBadge: {
+    borderColor: 'rgba(63, 207, 143, 0.7)',
     borderRadius: 8,
-    backgroundColor: '#F3B95F',
+    borderWidth: 1,
+    paddingHorizontal: 9,
+    paddingVertical: 6,
   },
-  reminderText: {
-    flex: 1,
-    color: 'rgba(233, 253, 255, 0.76)',
+  lockedBadge: {
+    borderColor: 'rgba(243, 185, 95, 0.76)',
+  },
+  accessBadgeText: {
+    color: '#3FCF8F',
+    fontSize: 10,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  lockedBadgeText: {
+    color: '#F3B95F',
+  },
+  classOutcome: {
+    color: 'rgba(233, 253, 255, 0.72)',
     fontSize: 14,
     lineHeight: 21,
   },
-  primaryButton: {
-    minHeight: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-    backgroundColor: '#3FCF8F',
+  classFooter: {
+    borderTopColor: 'rgba(233, 253, 255, 0.08)',
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    gap: 10,
+    justifyContent: 'space-between',
+    paddingTop: 10,
   },
-  primaryButtonText: {
-    color: '#02100C',
-    fontSize: 13,
+  classSchedule: {
+    color: '#E9FDFF',
+    flex: 1,
+    fontSize: 12,
     fontWeight: '900',
     textTransform: 'uppercase',
+  },
+  classAction: {
+    color: 'rgba(233, 253, 255, 0.58)',
+    flex: 1,
+    fontSize: 11,
+    fontWeight: '900',
+    textAlign: 'right',
+    textTransform: 'uppercase',
+  },
+  contractPanel: {
+    backgroundColor: 'rgba(80, 216, 250, 0.07)',
+    borderColor: 'rgba(80, 216, 250, 0.2)',
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 12,
+    padding: 16,
+  },
+  panelTitle: {
+    color: '#E9FDFF',
+    fontSize: 15,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  contractRow: {
+    borderTopColor: 'rgba(233, 253, 255, 0.08)',
+    borderTopWidth: 1,
+    gap: 5,
+    paddingTop: 12,
+  },
+  contractKey: {
+    color: '#50D8FA',
+    fontSize: 11,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  contractValue: {
+    color: 'rgba(233, 253, 255, 0.72)',
+    fontSize: 13,
+    lineHeight: 19,
   },
 });
