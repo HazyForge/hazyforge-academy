@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   kicker: {
-    color: theme.colors.green,
+    color: theme.colors.sky,
     fontSize: 13,
     fontWeight: '900',
     letterSpacing: 0,
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: theme.radius.panel,
-    backgroundColor: theme.colors.green,
+    backgroundColor: theme.colors.sky,
   },
   buttonDisabled: {
     opacity: 0.46,

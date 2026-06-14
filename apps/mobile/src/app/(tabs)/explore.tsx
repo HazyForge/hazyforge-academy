@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     paddingTop: 28,
   },
   kicker: {
-    color: theme.colors.green,
+    color: theme.colors.sky,
     fontSize: 12,
     fontWeight: '900',
     textTransform: 'uppercase',
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   passButton: {
-    backgroundColor: theme.colors.green,
+    backgroundColor: theme.colors.sky,
     borderRadius: theme.radius.panel,
     justifyContent: 'center',
     minHeight: 42,
@@ -213,8 +213,8 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   accessBadge: {
-    backgroundColor: theme.colors.greenSoft,
-    borderColor: '#C9E6C2',
+    backgroundColor: theme.colors.skySoft,
+    borderColor: '#BFDDF2',
     borderRadius: theme.radius.pill,
     borderWidth: 1,
     paddingHorizontal: 10,
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     borderColor: '#E5C783',
   },
   accessBadgeText: {
-    color: theme.colors.greenDeep,
+    color: theme.colors.sky,
     fontSize: 11,
     fontWeight: '900',
   },

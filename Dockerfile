@@ -11,11 +11,13 @@ RUN corepack enable && pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build
 
-FROM nginx:1.29-alpine
+FROM node:24-bookworm-slim
 
-COPY nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/apps/web/dist /usr/share/nginx/html
+WORKDIR /app
+
+COPY --from=build /app/apps/web/dist /app/apps/web/dist
+COPY server /app/server
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["node", "server/index.mjs"]

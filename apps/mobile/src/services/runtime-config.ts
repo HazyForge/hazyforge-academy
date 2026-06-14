@@ -14,7 +14,10 @@ export const APP_ENV =
 
 export const REQUIRES_EXPLICIT_API_BASE_URL = APP_ENV !== 'production';
 
-export const API_BASE_URL = normalizeBaseUrl(process.env.EXPO_PUBLIC_API_BASE_URL);
+const DEFAULT_API_BASE_URL = APP_ENV === 'production' ? 'https://learn.hazyforge.io' : '';
+
+export const API_BASE_URL =
+  normalizeBaseUrl(process.env.EXPO_PUBLIC_API_BASE_URL) || DEFAULT_API_BASE_URL;
 
 export const ZITADEL_ISSUER =
   normalizeEnvValue(process.env.EXPO_PUBLIC_ZITADEL_ISSUER) || DEFAULT_ZITADEL_ISSUER;
