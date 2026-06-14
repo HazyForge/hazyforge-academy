@@ -3,9 +3,10 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { contactOptions } from '@/constants/academy-product';
+import { academyTheme as theme } from '@/constants/academy-theme';
 
 function openMessagePlaceholder(label: string) {
-  Alert.alert(label, 'This control is wired as UI only until the direct chat or voice provider is set.');
+  Alert.alert(label, 'This button is ready for the chat or voice provider once it is connected.');
 }
 
 export default function ContactScreen() {
@@ -13,8 +14,11 @@ export default function ContactScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <Text style={styles.kicker}>Direct line</Text>
-          <Text style={styles.title}>Reach the instructor without leaving the Academy app.</Text>
+          <Text style={styles.kicker}>Contact</Text>
+          <Text style={styles.title}>Ask a question when you get stuck.</Text>
+          <Text style={styles.lede}>
+            Class questions, parent planning, and setup help should be easy to reach.
+          </Text>
         </View>
 
         <View style={styles.statusPanel}>
@@ -23,7 +27,7 @@ export default function ContactScreen() {
             <Text style={styles.statusValue}>Haze</Text>
           </View>
           <View style={styles.liveBadge}>
-            <Text style={styles.liveBadgeText}>setup pending</Text>
+            <Text style={styles.liveBadgeText}>chat setup coming</Text>
           </View>
         </View>
 
@@ -39,7 +43,9 @@ export default function ContactScreen() {
 
             return (
               <Pressable key={option.id} style={styles.optionPanel} onPress={onPress}>
-                <View style={[styles.optionRail, { backgroundColor: option.accent }]} />
+                <View style={[styles.optionIcon, { backgroundColor: option.accent }]}>
+                  <Text style={styles.optionIconText}>{option.label.slice(0, 1)}</Text>
+                </View>
                 <View style={styles.optionCopy}>
                   <View style={styles.optionHeader}>
                     <Text style={styles.optionLabel}>{option.label}</Text>
@@ -47,25 +53,25 @@ export default function ContactScreen() {
                   </View>
                   <Text style={styles.optionDetail}>{option.detail}</Text>
                 </View>
-                <Text style={styles.optionArrow}>/</Text>
+                <Text style={styles.optionArrow}>Open</Text>
               </Pressable>
             );
           })}
         </View>
 
-        <View style={styles.protocolPanel}>
-          <Text style={styles.panelTitle}>Contact protocol</Text>
-          <View style={styles.protocolRow}>
-            <Text style={styles.protocolKey}>urgent</Text>
-            <Text style={styles.protocolValue}>voice line once provider is connected</Text>
+        <View style={styles.notePanel}>
+          <Text style={styles.panelTitle}>Best way to reach out</Text>
+          <View style={styles.noteRow}>
+            <Text style={styles.noteKey}>Class questions</Text>
+            <Text style={styles.noteValue}>Use chat once it is connected, especially for prep notes.</Text>
           </View>
-          <View style={styles.protocolRow}>
-            <Text style={styles.protocolKey}>normal</Text>
-            <Text style={styles.protocolValue}>direct chat for class questions and prep notes</Text>
+          <View style={styles.noteRow}>
+            <Text style={styles.noteKey}>Quick call</Text>
+            <Text style={styles.noteValue}>Voice will be for moments where a short talk saves time.</Text>
           </View>
-          <View style={styles.protocolRow}>
-            <Text style={styles.protocolKey}>fallback</Text>
-            <Text style={styles.protocolValue}>email stays available for setup and billing</Text>
+          <View style={styles.noteRow}>
+            <Text style={styles.noteKey}>Reliable fallback</Text>
+            <Text style={styles.noteValue}>Email is available now for setup, billing, and scheduling help.</Text>
           </View>
         </View>
       </SafeAreaView>
@@ -76,7 +82,7 @@ export default function ContactScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#02070B',
+    backgroundColor: theme.colors.background,
   },
   content: {
     paddingBottom: 120,
@@ -86,78 +92,89 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   header: {
-    gap: 10,
+    gap: 9,
     paddingTop: 28,
   },
   kicker: {
-    color: '#50D8FA',
+    color: theme.colors.sky,
     fontSize: 12,
     fontWeight: '900',
-    letterSpacing: 0,
     textTransform: 'uppercase',
   },
   title: {
-    color: '#E9FDFF',
+    color: theme.colors.ink,
     fontSize: 34,
     fontWeight: '900',
     letterSpacing: 0,
-    lineHeight: 36,
-    textTransform: 'uppercase',
+    lineHeight: 38,
+  },
+  lede: {
+    color: theme.colors.inkMuted,
+    fontSize: 15,
+    lineHeight: 23,
   },
   statusPanel: {
+    ...theme.shadow,
     alignItems: 'center',
-    backgroundColor: 'rgba(80, 216, 250, 0.08)',
-    borderColor: 'rgba(80, 216, 250, 0.24)',
-    borderRadius: 8,
+    backgroundColor: theme.colors.white,
+    borderColor: theme.colors.line,
+    borderRadius: theme.radius.panel,
     borderWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     padding: 16,
   },
   statusLabel: {
-    color: '#50D8FA',
+    color: theme.colors.inkFaint,
     fontSize: 11,
     fontWeight: '900',
     textTransform: 'uppercase',
   },
   statusValue: {
-    color: '#E9FDFF',
+    color: theme.colors.ink,
     fontSize: 20,
     fontWeight: '900',
     marginTop: 3,
-    textTransform: 'uppercase',
   },
   liveBadge: {
-    borderColor: 'rgba(243, 185, 95, 0.6)',
-    borderRadius: 8,
+    backgroundColor: theme.colors.amberSoft,
+    borderColor: '#E5C783',
+    borderRadius: theme.radius.pill,
     borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 8,
   },
   liveBadgeText: {
-    color: '#F3B95F',
-    fontSize: 11,
+    color: theme.colors.amber,
+    fontSize: 12,
     fontWeight: '900',
-    textTransform: 'uppercase',
   },
   optionGrid: {
     gap: 10,
   },
   optionPanel: {
+    ...theme.shadow,
     alignItems: 'center',
-    backgroundColor: 'rgba(6, 19, 22, 0.92)',
-    borderColor: 'rgba(233, 253, 255, 0.13)',
-    borderRadius: 8,
+    backgroundColor: theme.colors.white,
+    borderColor: theme.colors.line,
+    borderRadius: theme.radius.panel,
     borderWidth: 1,
     flexDirection: 'row',
     gap: 12,
-    minHeight: 88,
+    minHeight: 90,
     padding: 14,
   },
-  optionRail: {
-    alignSelf: 'stretch',
-    borderRadius: 8,
-    width: 4,
+  optionIcon: {
+    alignItems: 'center',
+    borderRadius: theme.radius.panel,
+    height: 48,
+    justifyContent: 'center',
+    width: 48,
+  },
+  optionIconText: {
+    color: theme.colors.white,
+    fontSize: 22,
+    fontWeight: '900',
   },
   optionCopy: {
     flex: 1,
@@ -170,57 +187,54 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   optionLabel: {
-    color: '#E9FDFF',
+    color: theme.colors.ink,
     flex: 1,
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '900',
-    textTransform: 'uppercase',
   },
   optionSignal: {
-    color: 'rgba(233, 253, 255, 0.56)',
-    fontSize: 10,
+    color: theme.colors.inkFaint,
+    fontSize: 11,
     fontWeight: '900',
     textTransform: 'uppercase',
   },
   optionDetail: {
-    color: 'rgba(233, 253, 255, 0.68)',
-    fontSize: 13,
-    lineHeight: 19,
+    color: theme.colors.inkMuted,
+    fontSize: 14,
+    lineHeight: 20,
   },
   optionArrow: {
-    color: 'rgba(233, 253, 255, 0.55)',
-    fontSize: 32,
-    fontWeight: '300',
+    color: theme.colors.green,
+    fontSize: 12,
+    fontWeight: '900',
   },
-  protocolPanel: {
-    backgroundColor: 'rgba(63, 207, 143, 0.08)',
-    borderColor: 'rgba(63, 207, 143, 0.22)',
-    borderRadius: 8,
+  notePanel: {
+    backgroundColor: theme.colors.greenSoft,
+    borderColor: '#C9E6C2',
+    borderRadius: theme.radius.panel,
     borderWidth: 1,
     gap: 12,
     padding: 16,
   },
   panelTitle: {
-    color: '#E9FDFF',
-    fontSize: 15,
+    color: theme.colors.ink,
+    fontSize: 17,
     fontWeight: '900',
-    textTransform: 'uppercase',
   },
-  protocolRow: {
-    borderTopColor: 'rgba(233, 253, 255, 0.08)',
+  noteRow: {
+    borderTopColor: '#BCD8B7',
     borderTopWidth: 1,
     gap: 5,
     paddingTop: 12,
   },
-  protocolKey: {
-    color: '#3FCF8F',
-    fontSize: 11,
+  noteKey: {
+    color: theme.colors.greenDeep,
+    fontSize: 12,
     fontWeight: '900',
-    textTransform: 'uppercase',
   },
-  protocolValue: {
-    color: 'rgba(233, 253, 255, 0.72)',
-    fontSize: 13,
-    lineHeight: 19,
+  noteValue: {
+    color: theme.colors.inkMuted,
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
