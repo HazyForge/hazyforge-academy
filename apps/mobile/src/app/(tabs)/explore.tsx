@@ -3,11 +3,12 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { academyClasses, classPassState } from '@/constants/academy-product';
+import { academyTheme as theme } from '@/constants/academy-theme';
 
 const passRows = [
-  ['billing', 'Stripe or app-store entitlement later'],
-  ['source', 'Academy backend should return class_pass.active'],
-  ['fallback', 'locked tracks stay visible but blocked'],
+  ['Free start', 'The fit call and starter path stay easy to reach.'],
+  ['Paid tracks', 'Project series unlock when the class pass is active.'],
+  ['Later backend', 'The app will read pass status from Academy billing and account data.'],
 ] as const;
 
 export default function ClassesScreen() {
@@ -15,13 +16,16 @@ export default function ClassesScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <Text style={styles.kicker}>Paid access</Text>
-          <Text style={styles.title}>Classes stay visible, but paid tracks require a class pass.</Text>
+          <Text style={styles.kicker}>Classes</Text>
+          <Text style={styles.title}>Find a path that fits the learner.</Text>
+          <Text style={styles.lede}>
+            Start with confidence work, then unlock deeper projects when the class pass is ready.
+          </Text>
         </View>
 
         <View style={styles.passPanel}>
-          <View>
-            <Text style={styles.passLabel}>Current pass</Text>
+          <View style={styles.passCopy}>
+            <Text style={styles.passLabel}>Current access</Text>
             <Text style={styles.passValue}>{classPassState.label}</Text>
           </View>
           <Link href="/(tabs)" asChild>
@@ -36,8 +40,10 @@ export default function ClassesScreen() {
             const locked = item.requiresPass && !classPassState.hasActivePass;
 
             return (
-              <View key={item.id} style={styles.classPanel}>
-                <View style={[styles.classRail, { backgroundColor: item.accent }]} />
+              <View key={item.id} style={[styles.classPanel, locked && styles.lockedClassPanel]}>
+                <View style={[styles.classIcon, { backgroundColor: item.accent }]}>
+                  <Text style={styles.classIconText}>{item.name.slice(0, 1)}</Text>
+                </View>
                 <View style={styles.classContent}>
                   <View style={styles.classHeader}>
                     <View style={styles.classTitleGroup}>
@@ -46,7 +52,7 @@ export default function ClassesScreen() {
                     </View>
                     <View style={[styles.accessBadge, locked && styles.lockedBadge]}>
                       <Text style={[styles.accessBadgeText, locked && styles.lockedBadgeText]}>
-                        {locked ? 'locked' : 'open'}
+                        {locked ? 'Class pass' : 'Open'}
                       </Text>
                     </View>
                   </View>
@@ -54,7 +60,7 @@ export default function ClassesScreen() {
                   <View style={styles.classFooter}>
                     <Text style={styles.classSchedule}>{item.schedule}</Text>
                     <Text style={styles.classAction}>
-                      {locked ? 'upgrade required' : 'available after scheduling'}
+                      {locked ? 'Preview now, unlock later' : 'Ready after scheduling'}
                     </Text>
                   </View>
                 </View>
@@ -63,12 +69,12 @@ export default function ClassesScreen() {
           })}
         </View>
 
-        <View style={styles.contractPanel}>
-          <Text style={styles.panelTitle}>Entitlement contract</Text>
+        <View style={styles.notePanel}>
+          <Text style={styles.panelTitle}>How access should feel</Text>
           {passRows.map(([key, value]) => (
-            <View key={key} style={styles.contractRow}>
-              <Text style={styles.contractKey}>{key}</Text>
-              <Text style={styles.contractValue}>{value}</Text>
+            <View key={key} style={styles.noteRow}>
+              <Text style={styles.noteKey}>{key}</Text>
+              <Text style={styles.noteValue}>{value}</Text>
             </View>
           ))}
         </View>
@@ -80,7 +86,7 @@ export default function ClassesScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#02070B',
+    backgroundColor: theme.colors.background,
   },
   content: {
     paddingBottom: 120,
@@ -90,76 +96,96 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   header: {
-    gap: 10,
+    gap: 9,
     paddingTop: 28,
   },
   kicker: {
-    color: '#F3B95F',
+    color: theme.colors.green,
     fontSize: 12,
     fontWeight: '900',
     textTransform: 'uppercase',
   },
   title: {
-    color: '#E9FDFF',
+    color: theme.colors.ink,
     fontSize: 34,
     fontWeight: '900',
     letterSpacing: 0,
-    lineHeight: 36,
-    textTransform: 'uppercase',
+    lineHeight: 38,
+  },
+  lede: {
+    color: theme.colors.inkMuted,
+    fontSize: 15,
+    lineHeight: 23,
   },
   passPanel: {
+    ...theme.shadow,
     alignItems: 'center',
-    backgroundColor: 'rgba(243, 185, 95, 0.09)',
-    borderColor: 'rgba(243, 185, 95, 0.28)',
-    borderRadius: 8,
+    backgroundColor: theme.colors.white,
+    borderColor: theme.colors.line,
+    borderRadius: theme.radius.panel,
     borderWidth: 1,
     flexDirection: 'row',
     gap: 12,
     justifyContent: 'space-between',
     padding: 16,
   },
+  passCopy: {
+    flex: 1,
+  },
   passLabel: {
-    color: '#F3B95F',
+    color: theme.colors.inkFaint,
     fontSize: 11,
     fontWeight: '900',
     textTransform: 'uppercase',
   },
   passValue: {
-    color: '#E9FDFF',
+    color: theme.colors.ink,
     fontSize: 18,
     fontWeight: '900',
-    marginTop: 3,
-    textTransform: 'uppercase',
+    lineHeight: 22,
+    marginTop: 4,
   },
   passButton: {
-    backgroundColor: '#E9FDFF',
-    borderRadius: 8,
+    backgroundColor: theme.colors.green,
+    borderRadius: theme.radius.panel,
     justifyContent: 'center',
     minHeight: 42,
     paddingHorizontal: 13,
   },
   passButtonText: {
-    color: '#02070B',
-    fontSize: 11,
+    color: theme.colors.white,
+    fontSize: 12,
     fontWeight: '900',
-    textTransform: 'uppercase',
   },
   classList: {
     gap: 10,
   },
   classPanel: {
-    backgroundColor: 'rgba(6, 19, 22, 0.94)',
-    borderColor: 'rgba(233, 253, 255, 0.13)',
-    borderRadius: 8,
+    ...theme.shadow,
+    backgroundColor: theme.colors.white,
+    borderColor: theme.colors.line,
+    borderRadius: theme.radius.panel,
     borderWidth: 1,
     flexDirection: 'row',
     gap: 12,
-    minHeight: 138,
+    minHeight: 136,
     padding: 14,
   },
-  classRail: {
-    borderRadius: 8,
-    width: 4,
+  lockedClassPanel: {
+    backgroundColor: '#FFF8EA',
+    borderColor: '#E8D2A7',
+  },
+  classIcon: {
+    alignItems: 'center',
+    borderRadius: theme.radius.panel,
+    height: 52,
+    justifyContent: 'center',
+    width: 52,
+  },
+  classIconText: {
+    color: theme.colors.white,
+    fontSize: 24,
+    fontWeight: '900',
   },
   classContent: {
     flex: 1,
@@ -176,44 +202,43 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   className: {
-    color: '#E9FDFF',
+    color: theme.colors.ink,
     fontSize: 18,
     fontWeight: '900',
     lineHeight: 22,
-    textTransform: 'uppercase',
   },
   classFormat: {
-    color: '#50D8FA',
-    fontSize: 11,
-    fontWeight: '900',
-    textTransform: 'uppercase',
+    color: theme.colors.sky,
+    fontSize: 12,
+    fontWeight: '800',
   },
   accessBadge: {
-    borderColor: 'rgba(63, 207, 143, 0.7)',
-    borderRadius: 8,
+    backgroundColor: theme.colors.greenSoft,
+    borderColor: '#C9E6C2',
+    borderRadius: theme.radius.pill,
     borderWidth: 1,
-    paddingHorizontal: 9,
+    paddingHorizontal: 10,
     paddingVertical: 6,
   },
   lockedBadge: {
-    borderColor: 'rgba(243, 185, 95, 0.76)',
+    backgroundColor: theme.colors.amberSoft,
+    borderColor: '#E5C783',
   },
   accessBadgeText: {
-    color: '#3FCF8F',
-    fontSize: 10,
+    color: theme.colors.greenDeep,
+    fontSize: 11,
     fontWeight: '900',
-    textTransform: 'uppercase',
   },
   lockedBadgeText: {
-    color: '#F3B95F',
+    color: theme.colors.amber,
   },
   classOutcome: {
-    color: 'rgba(233, 253, 255, 0.72)',
+    color: theme.colors.inkMuted,
     fontSize: 14,
     lineHeight: 21,
   },
   classFooter: {
-    borderTopColor: 'rgba(233, 253, 255, 0.08)',
+    borderTopColor: theme.colors.line,
     borderTopWidth: 1,
     flexDirection: 'row',
     gap: 10,
@@ -221,49 +246,45 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   classSchedule: {
-    color: '#E9FDFF',
+    color: theme.colors.ink,
     flex: 1,
     fontSize: 12,
     fontWeight: '900',
-    textTransform: 'uppercase',
   },
   classAction: {
-    color: 'rgba(233, 253, 255, 0.58)',
-    flex: 1,
-    fontSize: 11,
-    fontWeight: '900',
+    color: theme.colors.inkFaint,
+    flex: 1.2,
+    fontSize: 12,
+    fontWeight: '800',
     textAlign: 'right',
-    textTransform: 'uppercase',
   },
-  contractPanel: {
-    backgroundColor: 'rgba(80, 216, 250, 0.07)',
-    borderColor: 'rgba(80, 216, 250, 0.2)',
-    borderRadius: 8,
+  notePanel: {
+    backgroundColor: theme.colors.skySoft,
+    borderColor: '#B8DDE8',
+    borderRadius: theme.radius.panel,
     borderWidth: 1,
     gap: 12,
     padding: 16,
   },
   panelTitle: {
-    color: '#E9FDFF',
-    fontSize: 15,
+    color: theme.colors.ink,
+    fontSize: 17,
     fontWeight: '900',
-    textTransform: 'uppercase',
   },
-  contractRow: {
-    borderTopColor: 'rgba(233, 253, 255, 0.08)',
+  noteRow: {
+    borderTopColor: '#C8E4EC',
     borderTopWidth: 1,
     gap: 5,
     paddingTop: 12,
   },
-  contractKey: {
-    color: '#50D8FA',
-    fontSize: 11,
+  noteKey: {
+    color: theme.colors.sky,
+    fontSize: 12,
     fontWeight: '900',
-    textTransform: 'uppercase',
   },
-  contractValue: {
-    color: 'rgba(233, 253, 255, 0.72)',
-    fontSize: 13,
-    lineHeight: 19,
+  noteValue: {
+    color: theme.colors.inkMuted,
+    fontSize: 14,
+    lineHeight: 20,
   },
 });

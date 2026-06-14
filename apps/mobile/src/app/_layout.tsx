@@ -1,10 +1,11 @@
-import { DarkTheme, router, Stack, ThemeProvider, useRouter, useSegments } from 'expo-router';
+import { DefaultTheme, router, Stack, ThemeProvider, useRouter, useSegments } from 'expo-router';
 import type { Href } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
+import { academyTheme as theme } from '@/constants/academy-theme';
 import { AuthProvider, useAuth } from '@/contexts/auth-context';
 
 Notifications.setNotificationHandler({
@@ -69,9 +70,9 @@ function RouteGuard() {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#02070B',
+        backgroundColor: theme.colors.background,
       }}>
-      <ActivityIndicator size="large" color="#3FCF8F" />
+      <ActivityIndicator size="large" color={theme.colors.green} />
     </View>
   );
 }
@@ -80,7 +81,7 @@ function RootNavigator() {
   useNotificationRouting();
 
   return (
-    <ThemeProvider value={DarkTheme}>
+    <ThemeProvider value={DefaultTheme}>
       <RouteGuard />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
@@ -89,7 +90,7 @@ function RootNavigator() {
         <Stack.Screen name="auth/callback" />
         <Stack.Screen name="auth/logout" />
       </Stack>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
     </ThemeProvider>
   );
 }

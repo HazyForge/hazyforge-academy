@@ -1,5 +1,6 @@
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
+import { academyTheme as theme } from '@/constants/academy-theme';
 import { useAuth } from '@/contexts/auth-context';
 import { AUTH_IS_CONFIGURED, REDIRECT_URI } from '@/services/auth';
 
@@ -12,17 +13,17 @@ export default function LoginScreen() {
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={styles.kicker}>Hazy Forge Academy</Text>
-          <Text style={styles.title}>Sign in with Hazy Forge</Text>
+          <Text style={styles.title}>Welcome back to class.</Text>
           <Text style={styles.copy}>
-            Use your Hazy Forge account to manage Academy scheduling, classes, and reminders.
+            Sign in to book sessions, check class access, and keep the next project moving.
           </Text>
         </View>
 
         <View style={styles.panel}>
-          <Text style={styles.panelTitle}>Native OIDC</Text>
+          <Text style={styles.panelTitle}>Private Academy account</Text>
           <Text style={styles.panelCopy}>
-            This app uses authorization code flow with PKCE and stores tokens in secure device
-            storage on iOS and Android.
+            Your account keeps scheduling, class notes, reminders, and paid-track access in one
+            place.
           </Text>
           <Text style={styles.redirect}>{REDIRECT_URI}</Text>
         </View>
@@ -50,7 +51,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#02070B',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
@@ -64,58 +65,57 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   kicker: {
-    color: '#3FCF8F',
+    color: theme.colors.green,
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '900',
     letterSpacing: 0,
     textTransform: 'uppercase',
   },
   title: {
-    color: '#E9FDFF',
-    fontSize: 40,
+    color: theme.colors.ink,
+    fontSize: 38,
     fontWeight: '900',
     letterSpacing: 0,
     lineHeight: 42,
-    textTransform: 'uppercase',
   },
   copy: {
-    color: 'rgba(233, 253, 255, 0.72)',
+    color: theme.colors.inkMuted,
     fontSize: 16,
     lineHeight: 24,
   },
   panel: {
+    ...theme.shadow,
     gap: 12,
     borderWidth: 1,
-    borderColor: 'rgba(233, 253, 255, 0.12)',
-    borderRadius: 8,
-    backgroundColor: 'rgba(6, 19, 22, 0.88)',
+    borderColor: theme.colors.line,
+    borderRadius: theme.radius.panel,
+    backgroundColor: theme.colors.white,
     padding: 18,
   },
   panelTitle: {
-    color: '#E9FDFF',
+    color: theme.colors.ink,
     fontSize: 17,
     fontWeight: '900',
-    textTransform: 'uppercase',
   },
   panelCopy: {
-    color: 'rgba(233, 253, 255, 0.72)',
+    color: theme.colors.inkMuted,
     fontSize: 14,
     lineHeight: 22,
   },
   redirect: {
-    color: '#50D8FA',
+    color: theme.colors.sky,
     fontSize: 12,
     fontWeight: '700',
   },
   warning: {
     borderWidth: 1,
-    borderColor: 'rgba(243, 185, 95, 0.28)',
-    borderRadius: 8,
-    backgroundColor: 'rgba(243, 185, 95, 0.1)',
+    borderColor: '#E5C783',
+    borderRadius: theme.radius.panel,
+    backgroundColor: theme.colors.amberSoft,
     padding: 14,
   },
   warningText: {
-    color: '#F3B95F',
+    color: theme.colors.amber,
     fontSize: 13,
     lineHeight: 20,
   },
@@ -123,16 +123,15 @@ const styles = StyleSheet.create({
     minHeight: 52,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
-    backgroundColor: '#3FCF8F',
+    borderRadius: theme.radius.panel,
+    backgroundColor: theme.colors.green,
   },
   buttonDisabled: {
     opacity: 0.46,
   },
   buttonText: {
-    color: '#02100C',
+    color: theme.colors.white,
     fontSize: 13,
     fontWeight: '900',
-    textTransform: 'uppercase',
   },
 });

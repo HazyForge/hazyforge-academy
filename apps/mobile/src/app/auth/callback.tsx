@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
+import { academyTheme as theme } from '@/constants/academy-theme';
 import { useAuth } from '@/contexts/auth-context';
 
 export default function AuthCallbackScreen() {
@@ -17,7 +18,7 @@ export default function AuthCallbackScreen() {
 
   return (
     <View style={styles.screen}>
-      <ActivityIndicator size="large" color="#3FCF8F" />
+      <ActivityIndicator size="large" color={theme.colors.green} />
       <Text style={styles.text}>Completing sign in</Text>
     </View>
   );
@@ -29,12 +30,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 16,
-    backgroundColor: '#02070B',
+    backgroundColor: theme.colors.background,
   },
   text: {
-    color: 'rgba(233, 253, 255, 0.72)',
+    color: theme.colors.inkMuted,
     fontSize: 14,
     fontWeight: '700',
-    textTransform: 'uppercase',
   },
 });

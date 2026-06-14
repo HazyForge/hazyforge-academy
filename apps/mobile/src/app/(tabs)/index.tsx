@@ -6,12 +6,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import CalBookingEmbed from '@/components/cal-booking-embed';
 import { academyBooking, academyClasses, classPassState } from '@/constants/academy-product';
+import { academyTheme as theme } from '@/constants/academy-theme';
 import { useAuth } from '@/contexts/auth-context';
 
 const nextSteps = [
-  'Pick the student, class format, and first practical goal.',
-  'Book the fit call inside the app.',
-  'Use class pass access for paid tracks and follow-up notes.',
+  'Choose the learner, pace, and first thing they want to build.',
+  'Book a fit call without leaving the app.',
+  'Turn the call into a class plan, reminders, and paid-track access.',
 ];
 
 async function configureNotificationChannel() {
@@ -20,13 +21,13 @@ async function configureNotificationChannel() {
       name: 'Academy reminders',
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#3FCF8F',
+      lightColor: theme.colors.green,
     });
   }
 }
 
 export default function ScheduleScreen() {
-  const [notificationStatus, setNotificationStatus] = useState('Not enabled yet');
+  const [notificationStatus, setNotificationStatus] = useState('Reminders are off for now');
   const { logout, user } = useAuth();
   const unlockedClasses = academyClasses.filter(
     (item) => !item.requiresPass || classPassState.hasActivePass,
@@ -39,7 +40,7 @@ export default function ScheduleScreen() {
       existing.status === 'granted' ? existing : await Notifications.requestPermissionsAsync();
 
     if (permission.status !== 'granted') {
-      setNotificationStatus('Notifications denied');
+      setNotificationStatus('Reminders were not enabled');
       return;
     }
 
@@ -63,11 +64,24 @@ export default function ScheduleScreen() {
         <View style={styles.topbar}>
           <View>
             <Text style={styles.brand}>Hazy Forge Academy</Text>
-            <Text style={styles.subbrand}>student console</Text>
+            <Text style={styles.subbrand}>Creative technology lessons</Text>
           </View>
           <Pressable style={styles.signOutButton} onPress={logout}>
             <Text style={styles.signOutButtonText}>Sign out</Text>
           </Pressable>
+        </View>
+
+        <View style={styles.heroPanel}>
+          <View style={styles.heroCopy}>
+            <Text style={styles.kicker}>Schedule</Text>
+            <Text style={styles.title}>Plan the next thing to build.</Text>
+            <Text style={styles.lede}>
+              Book time, keep class access nearby, and give each learner a clear next step.
+            </Text>
+          </View>
+          <View style={styles.heroAccent}>
+            <Text style={styles.heroAccentText}>Build</Text>
+          </View>
         </View>
 
         <View style={styles.statusPanel}>
@@ -75,35 +89,34 @@ export default function ScheduleScreen() {
             <Text style={styles.statusLabel}>Signed in</Text>
             <Text style={styles.statusValue}>{user?.email || user?.name || 'Hazy Forge account'}</Text>
           </View>
-          <View style={styles.statusDivider} />
           <View style={styles.statusBlock}>
             <Text style={styles.statusLabel}>Class access</Text>
             <Text style={styles.statusValue}>{classPassState.label}</Text>
           </View>
-          <View style={styles.statusDivider} />
           <View style={styles.statusBlock}>
-            <Text style={styles.statusLabel}>Unlocked</Text>
+            <Text style={styles.statusLabel}>Tracks open</Text>
             <Text style={styles.statusValue}>
-              {unlockedClasses}/{academyClasses.length} tracks
+              {unlockedClasses} of {academyClasses.length}
             </Text>
           </View>
         </View>
 
-        <View style={styles.heroPanel}>
-          <Text style={styles.kicker}>Schedule</Text>
-          <Text style={styles.title}>Book the next Academy session inside the app.</Text>
-          <Text style={styles.lede}>
-            Cal stays the scheduling system of record. This screen keeps the booking flow in the
-            subscribed app so the class plan, pass state, and reminders stay together.
-          </Text>
+        <View style={styles.actionCard}>
+          <View style={styles.actionCopy}>
+            <Text style={styles.cardTitle}>Book a 1:1 fit call</Text>
+            <Text style={styles.cardText}>
+              Cal handles the booking details. The Academy app keeps the plan, reminders, and class
+              context together.
+            </Text>
+          </View>
           <View style={styles.actions}>
             <Pressable
               style={styles.primaryButton}
               onPress={() => WebBrowser.openBrowserAsync(academyBooking.baseUrl)}>
-              <Text style={styles.primaryButtonText}>Open full Cal</Text>
+              <Text style={styles.primaryButtonText}>Open full calendar</Text>
             </Pressable>
             <Pressable style={styles.secondaryButton} onPress={schedulePracticeReminder}>
-              <Text style={styles.secondaryButtonText}>Test reminder</Text>
+              <Text style={styles.secondaryButtonText}>Try reminder</Text>
             </Pressable>
           </View>
           <Text style={styles.notificationText}>{notificationStatus}</Text>
@@ -112,8 +125,8 @@ export default function ScheduleScreen() {
         <View style={styles.embedShell}>
           <View style={styles.panelHeader}>
             <View>
-              <Text style={styles.panelEyebrow}>Booker</Text>
-              <Text style={styles.panelTitle}>Cal.diy embed</Text>
+              <Text style={styles.panelEyebrow}>Booking</Text>
+              <Text style={styles.panelTitle}>Pick a time that works</Text>
             </View>
             <Text style={styles.panelMeta}>{academyBooking.duration}</Text>
           </View>
@@ -132,14 +145,14 @@ export default function ScheduleScreen() {
         <View style={styles.panel}>
           <View style={styles.panelHeader}>
             <View>
-              <Text style={styles.panelEyebrow}>Class flow</Text>
-              <Text style={styles.panelTitle}>First session path</Text>
+              <Text style={styles.panelEyebrow}>First session</Text>
+              <Text style={styles.panelTitle}>A simple start path</Text>
             </View>
             <Text style={styles.panelMeta}>intake</Text>
           </View>
           {nextSteps.map((step, index) => (
             <View key={step} style={styles.stepRow}>
-              <Text style={styles.stepNumber}>{String(index + 1).padStart(2, '0')}</Text>
+              <Text style={styles.stepNumber}>{index + 1}</Text>
               <Text style={styles.stepText}>{step}</Text>
             </View>
           ))}
@@ -152,7 +165,7 @@ export default function ScheduleScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#02070B',
+    backgroundColor: theme.colors.background,
   },
   content: {
     paddingBottom: 120,
@@ -166,92 +179,128 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 14,
     justifyContent: 'space-between',
-    paddingTop: 26,
+    paddingTop: 24,
   },
   brand: {
-    color: '#E9FDFF',
+    color: theme.colors.ink,
     fontSize: 20,
     fontWeight: '900',
     letterSpacing: 0,
-    textTransform: 'uppercase',
   },
   subbrand: {
-    color: '#3FCF8F',
-    fontSize: 11,
-    fontWeight: '900',
+    color: theme.colors.green,
+    fontSize: 13,
+    fontWeight: '800',
     marginTop: 2,
-    textTransform: 'uppercase',
   },
   signOutButton: {
-    borderColor: 'rgba(233, 253, 255, 0.18)',
-    borderRadius: 8,
+    backgroundColor: theme.colors.white,
+    borderColor: theme.colors.line,
+    borderRadius: theme.radius.panel,
     borderWidth: 1,
     justifyContent: 'center',
     minHeight: 40,
     paddingHorizontal: 12,
   },
   signOutButtonText: {
-    color: '#E9FDFF',
+    color: theme.colors.ink,
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  heroPanel: {
+    ...theme.shadow,
+    backgroundColor: theme.colors.white,
+    borderColor: theme.colors.line,
+    borderRadius: theme.radius.panel,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 16,
+    overflow: 'hidden',
+    padding: 18,
+  },
+  heroCopy: {
+    flex: 1,
+    gap: 10,
+  },
+  heroAccent: {
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    backgroundColor: theme.colors.greenSoft,
+    borderColor: '#C9E6C2',
+    borderRadius: theme.radius.panel,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minWidth: 74,
+  },
+  heroAccentText: {
+    color: theme.colors.greenDeep,
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  kicker: {
+    color: theme.colors.amber,
+    fontSize: 12,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  title: {
+    color: theme.colors.ink,
+    fontSize: 34,
+    fontWeight: '900',
+    letterSpacing: 0,
+    lineHeight: 38,
+  },
+  lede: {
+    color: theme.colors.inkMuted,
+    fontSize: 15,
+    lineHeight: 23,
+  },
+  statusPanel: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  statusBlock: {
+    backgroundColor: theme.colors.white,
+    borderColor: theme.colors.line,
+    borderRadius: theme.radius.panel,
+    borderWidth: 1,
+    flex: 1,
+    gap: 6,
+    minHeight: 82,
+    padding: 12,
+  },
+  statusLabel: {
+    color: theme.colors.inkFaint,
     fontSize: 11,
     fontWeight: '900',
     textTransform: 'uppercase',
   },
-  statusPanel: {
-    backgroundColor: 'rgba(6, 19, 22, 0.94)',
-    borderColor: 'rgba(63, 207, 143, 0.26)',
-    borderRadius: 8,
-    borderWidth: 1,
-    flexDirection: 'row',
-    padding: 14,
-  },
-  statusBlock: {
-    flex: 1,
-    gap: 5,
-  },
-  statusDivider: {
-    backgroundColor: 'rgba(233, 253, 255, 0.1)',
-    marginHorizontal: 10,
-    width: 1,
-  },
-  statusLabel: {
-    color: '#50D8FA',
-    fontSize: 10,
-    fontWeight: '900',
-    textTransform: 'uppercase',
-  },
   statusValue: {
-    color: '#E9FDFF',
-    fontSize: 12,
+    color: theme.colors.ink,
+    fontSize: 13,
     fontWeight: '800',
-    lineHeight: 16,
+    lineHeight: 17,
   },
-  heroPanel: {
-    backgroundColor: 'rgba(63, 207, 143, 0.08)',
-    borderColor: 'rgba(63, 207, 143, 0.22)',
-    borderRadius: 8,
+  actionCard: {
+    backgroundColor: theme.colors.greenSoft,
+    borderColor: '#C9E6C2',
+    borderRadius: theme.radius.panel,
     borderWidth: 1,
     gap: 14,
-    padding: 18,
+    padding: 16,
   },
-  kicker: {
-    color: '#3FCF8F',
-    fontSize: 12,
+  actionCopy: {
+    gap: 6,
+  },
+  cardTitle: {
+    color: theme.colors.ink,
+    fontSize: 19,
     fontWeight: '900',
-    letterSpacing: 0,
-    textTransform: 'uppercase',
   },
-  title: {
-    color: '#E9FDFF',
-    fontSize: 33,
-    fontWeight: '900',
-    letterSpacing: 0,
-    lineHeight: 35,
-    textTransform: 'uppercase',
-  },
-  lede: {
-    color: 'rgba(233, 253, 255, 0.72)',
-    fontSize: 15,
-    lineHeight: 23,
+  cardText: {
+    color: theme.colors.inkMuted,
+    fontSize: 14,
+    lineHeight: 21,
   },
   actions: {
     flexDirection: 'row',
@@ -259,50 +308,50 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   primaryButton: {
-    backgroundColor: '#3FCF8F',
-    borderRadius: 8,
+    backgroundColor: theme.colors.green,
+    borderRadius: theme.radius.panel,
     justifyContent: 'center',
     minHeight: 46,
     paddingHorizontal: 16,
   },
   primaryButtonText: {
-    color: '#02100C',
-    fontSize: 12,
+    color: theme.colors.white,
+    fontSize: 13,
     fontWeight: '900',
-    textTransform: 'uppercase',
   },
   secondaryButton: {
-    borderColor: 'rgba(233, 253, 255, 0.18)',
-    borderRadius: 8,
+    backgroundColor: theme.colors.white,
+    borderColor: '#BCD8B7',
+    borderRadius: theme.radius.panel,
     borderWidth: 1,
     justifyContent: 'center',
     minHeight: 46,
     paddingHorizontal: 16,
   },
   secondaryButtonText: {
-    color: '#E9FDFF',
-    fontSize: 12,
+    color: theme.colors.greenDeep,
+    fontSize: 13,
     fontWeight: '900',
-    textTransform: 'uppercase',
   },
   notificationText: {
-    color: 'rgba(233, 253, 255, 0.65)',
-    fontSize: 12,
+    color: theme.colors.inkMuted,
+    fontSize: 13,
     fontWeight: '700',
   },
   embedShell: {
-    backgroundColor: 'rgba(6, 19, 22, 0.94)',
-    borderColor: 'rgba(233, 253, 255, 0.13)',
-    borderRadius: 8,
+    ...theme.shadow,
+    backgroundColor: theme.colors.white,
+    borderColor: theme.colors.line,
+    borderRadius: theme.radius.panel,
     borderWidth: 1,
     gap: 14,
     overflow: 'hidden',
     padding: 14,
   },
   panel: {
-    backgroundColor: 'rgba(6, 19, 22, 0.92)',
-    borderColor: 'rgba(233, 253, 255, 0.12)',
-    borderRadius: 8,
+    backgroundColor: theme.colors.white,
+    borderColor: theme.colors.line,
+    borderRadius: theme.radius.panel,
     borderWidth: 1,
     gap: 14,
     padding: 16,
@@ -314,47 +363,50 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   panelEyebrow: {
-    color: '#50D8FA',
-    fontSize: 10,
-    fontWeight: '900',
-    textTransform: 'uppercase',
-  },
-  panelTitle: {
-    color: '#E9FDFF',
-    fontSize: 17,
-    fontWeight: '900',
-    marginTop: 3,
-    textTransform: 'uppercase',
-  },
-  panelMeta: {
-    color: '#F3B95F',
+    color: theme.colors.sky,
     fontSize: 11,
     fontWeight: '900',
     textTransform: 'uppercase',
   },
+  panelTitle: {
+    color: theme.colors.ink,
+    fontSize: 18,
+    fontWeight: '900',
+    marginTop: 3,
+  },
+  panelMeta: {
+    color: theme.colors.amber,
+    fontSize: 12,
+    fontWeight: '900',
+  },
   embedFrame: {
-    backgroundColor: '#02070B',
-    borderColor: 'rgba(63, 207, 143, 0.2)',
-    borderRadius: 8,
+    backgroundColor: theme.colors.backgroundSoft,
+    borderColor: theme.colors.line,
+    borderRadius: theme.radius.panel,
     borderWidth: 1,
     height: 580,
     overflow: 'hidden',
   },
   stepRow: {
     alignItems: 'flex-start',
-    borderTopColor: 'rgba(233, 253, 255, 0.08)',
+    borderTopColor: theme.colors.line,
     borderTopWidth: 1,
     flexDirection: 'row',
     gap: 14,
     paddingTop: 14,
   },
   stepNumber: {
-    color: '#F3B95F',
+    backgroundColor: theme.colors.amberSoft,
+    borderRadius: theme.radius.pill,
+    color: theme.colors.amber,
     fontSize: 13,
     fontWeight: '900',
+    minWidth: 28,
+    paddingVertical: 5,
+    textAlign: 'center',
   },
   stepText: {
-    color: 'rgba(233, 253, 255, 0.76)',
+    color: theme.colors.inkMuted,
     flex: 1,
     fontSize: 14,
     lineHeight: 21,
