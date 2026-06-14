@@ -10,13 +10,22 @@ imagePullSecrets:
 resources:
   requests:
     cpu: 25m
-    memory: 64Mi
+    memory: 96Mi
   limits:
     cpu: 300m
-    memory: 192Mi
+    memory: 256Mi
 service:
   port: 80
   containerPort: 80
+env:
+  CAL_API_BASE_URL: "https://cal.hazyforge.io/api"
+  ACADEMY_CAL_USERNAME: "palehazy"
+  ACADEMY_CAL_EVENT_TYPE_SLUG: "30min"
+  ACADEMY_CAL_TIME_ZONE: "America/Chicago"
+  CAL_SLOTS_API_VERSION: "2024-09-04"
+  CAL_BOOKINGS_API_VERSION: "2026-02-25"
+envFromSecrets:
+  - hazyforge-academy-cal-api
 livenessProbe:
   httpGet:
     path: /healthz

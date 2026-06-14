@@ -204,13 +204,13 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   optionArrow: {
-    color: theme.colors.green,
+    color: theme.colors.sky,
     fontSize: 12,
     fontWeight: '900',
   },
   notePanel: {
-    backgroundColor: theme.colors.greenSoft,
-    borderColor: '#C9E6C2',
+    backgroundColor: theme.colors.skySoft,
+    borderColor: '#BFDDF2',
     borderRadius: theme.radius.panel,
     borderWidth: 1,
     gap: 12,
@@ -222,13 +222,13 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   noteRow: {
-    borderTopColor: '#BCD8B7',
+    borderTopColor: '#C7E0F4',
     borderTopWidth: 1,
     gap: 5,
     paddingTop: 12,
   },
   noteKey: {
-    color: theme.colors.greenDeep,
+    color: theme.colors.sky,
     fontSize: 12,
     fontWeight: '900',
   },

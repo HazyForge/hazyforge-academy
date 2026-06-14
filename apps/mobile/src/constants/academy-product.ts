@@ -1,8 +1,9 @@
 export const academyBooking = {
   baseUrl: 'https://cal.hazyforge.io/palehazy/30min',
-  embedUrl: 'https://cal.hazyforge.io/palehazy/30min?embed=true&theme=light',
+  apiPath: '/api/scheduling',
   owner: 'palehazy',
   duration: '30 min',
+  timeZone: 'America/Chicago',
 } as const;
 
 export const classPassState = {
@@ -19,7 +20,7 @@ export const academyClasses = [
     name: 'First Computer Confidence',
     format: '1:1 or family',
     schedule: 'Fit call first',
-    accent: '#2B8DBD',
+    accent: '#2F80C9',
     requiresPass: false,
     outcome: 'Files, accounts, browser safety, passwords, and everyday machine habits.',
   },
@@ -37,7 +38,7 @@ export const academyClasses = [
     name: 'AI Builder Lab',
     format: 'project sprint',
     schedule: 'Weekly lab',
-    accent: '#2F7D3B',
+    accent: '#1E6D8F',
     requiresPass: true,
     outcome: 'Prompting, verification, privacy, model limits, and a useful prototype.',
   },
@@ -46,7 +47,7 @@ export const academyClasses = [
     name: 'Ship A First Website',
     format: 'portfolio track',
     schedule: 'After intake',
-    accent: '#B96B4E',
+    accent: '#5C77D6',
     requiresPass: true,
     outcome: 'HTML, CSS, deployment, domain basics, and a live page to share.',
   },
@@ -58,14 +59,14 @@ export const contactOptions = [
     label: 'Message Haze',
     detail: 'For class questions, project ideas, and quick check-ins.',
     signal: 'soon',
-    accent: '#2B8DBD',
+    accent: '#2F80C9',
   },
   {
     id: 'voice',
     label: 'Voice line',
     detail: 'For the moments where talking it through is easier.',
     signal: 'soon',
-    accent: '#2F7D3B',
+    accent: '#1E6D8F',
   },
   {
     id: 'email',
