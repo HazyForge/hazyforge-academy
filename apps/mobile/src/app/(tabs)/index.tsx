@@ -1,36 +1,17 @@
-import { Link } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import CalBookingEmbed from '@/components/cal-booking-embed';
+import { academyBooking, academyClasses, classPassState } from '@/constants/academy-product';
 import { useAuth } from '@/contexts/auth-context';
-
-const CAL_URL = 'https://cal.hazyforge.io/palehazy/30min';
-
-const tracks = [
-  {
-    title: 'Computer fluency',
-    detail: 'Files, accounts, browsers, safety, shortcuts, and daily confidence.',
-    accent: '#50D8FA',
-  },
-  {
-    title: 'Build the machine',
-    detail: 'Parts, compatibility, PC assembly, upgrades, and troubleshooting.',
-    accent: '#F3B95F',
-  },
-  {
-    title: 'AI foundations',
-    detail: 'Prompting, verification, privacy, model limits, and AI-assisted projects.',
-    accent: '#3FCF8F',
-  },
-];
 
 const nextSteps = [
   'Pick the student, class format, and first practical goal.',
-  'Schedule a fit call from the app.',
-  'Get prep notes, reminders, and class follow-up in one place.',
+  'Book the fit call inside the app.',
+  'Use class pass access for paid tracks and follow-up notes.',
 ];
 
 async function configureNotificationChannel() {
@@ -44,9 +25,12 @@ async function configureNotificationChannel() {
   }
 }
 
-export default function HomeScreen() {
+export default function ScheduleScreen() {
   const [notificationStatus, setNotificationStatus] = useState('Not enabled yet');
   const { logout, user } = useAuth();
+  const unlockedClasses = academyClasses.filter(
+    (item) => !item.requiresPass || classPassState.hasActivePass,
+  ).length;
 
   async function schedulePracticeReminder() {
     await configureNotificationChannel();
@@ -76,57 +60,82 @@ export default function HomeScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.hero}>
-          <Text style={styles.kicker}>Hazy Forge Academy</Text>
-          <Text style={styles.title}>Schedule learning that turns into shipped work.</Text>
-          <Text style={styles.lede}>
-            One-on-one and small-group technology classes for computers, coding, hardware,
-            websites, terminals, and AI judgment.
-          </Text>
-          <View style={styles.actions}>
-            <Pressable style={styles.primaryButton} onPress={() => WebBrowser.openBrowserAsync(CAL_URL)}>
-              <Text style={styles.primaryButtonText}>Book a fit call</Text>
-            </Pressable>
-            <Link href="/(tabs)/explore" asChild>
-              <Pressable style={styles.secondaryButton}>
-                <Text style={styles.secondaryButtonText}>View classes</Text>
-              </Pressable>
-            </Link>
-          </View>
-        </View>
-
-        <View style={styles.identityPanel}>
+        <View style={styles.topbar}>
           <View>
-            <Text style={styles.identityLabel}>Signed in</Text>
-            <Text style={styles.identityValue}>{user?.email || user?.name || 'Hazy Forge account'}</Text>
+            <Text style={styles.brand}>Hazy Forge Academy</Text>
+            <Text style={styles.subbrand}>student console</Text>
           </View>
           <Pressable style={styles.signOutButton} onPress={logout}>
             <Text style={styles.signOutButtonText}>Sign out</Text>
           </Pressable>
         </View>
 
-        <View style={styles.panel}>
-          <View style={styles.panelHeader}>
-            <Text style={styles.panelTitle}>Learning tracks</Text>
-            <Text style={styles.panelMeta}>3 active lanes</Text>
+        <View style={styles.statusPanel}>
+          <View style={styles.statusBlock}>
+            <Text style={styles.statusLabel}>Signed in</Text>
+            <Text style={styles.statusValue}>{user?.email || user?.name || 'Hazy Forge account'}</Text>
           </View>
-          <View style={styles.trackList}>
-            {tracks.map((track) => (
-              <View key={track.title} style={styles.trackCard}>
-                <View style={[styles.trackAccent, { backgroundColor: track.accent }]} />
-                <View style={styles.trackCopy}>
-                  <Text style={styles.trackTitle}>{track.title}</Text>
-                  <Text style={styles.trackDetail}>{track.detail}</Text>
-                </View>
-              </View>
-            ))}
+          <View style={styles.statusDivider} />
+          <View style={styles.statusBlock}>
+            <Text style={styles.statusLabel}>Class access</Text>
+            <Text style={styles.statusValue}>{classPassState.label}</Text>
+          </View>
+          <View style={styles.statusDivider} />
+          <View style={styles.statusBlock}>
+            <Text style={styles.statusLabel}>Unlocked</Text>
+            <Text style={styles.statusValue}>
+              {unlockedClasses}/{academyClasses.length} tracks
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.heroPanel}>
+          <Text style={styles.kicker}>Schedule</Text>
+          <Text style={styles.title}>Book the next Academy session inside the app.</Text>
+          <Text style={styles.lede}>
+            Cal stays the scheduling system of record. This screen keeps the booking flow in the
+            subscribed app so the class plan, pass state, and reminders stay together.
+          </Text>
+          <View style={styles.actions}>
+            <Pressable
+              style={styles.primaryButton}
+              onPress={() => WebBrowser.openBrowserAsync(academyBooking.baseUrl)}>
+              <Text style={styles.primaryButtonText}>Open full Cal</Text>
+            </Pressable>
+            <Pressable style={styles.secondaryButton} onPress={schedulePracticeReminder}>
+              <Text style={styles.secondaryButtonText}>Test reminder</Text>
+            </Pressable>
+          </View>
+          <Text style={styles.notificationText}>{notificationStatus}</Text>
+        </View>
+
+        <View style={styles.embedShell}>
+          <View style={styles.panelHeader}>
+            <View>
+              <Text style={styles.panelEyebrow}>Booker</Text>
+              <Text style={styles.panelTitle}>Cal.diy embed</Text>
+            </View>
+            <Text style={styles.panelMeta}>{academyBooking.duration}</Text>
+          </View>
+          <View style={styles.embedFrame}>
+            <CalBookingEmbed
+              title="Hazy Forge Academy booking"
+              url={academyBooking.embedUrl}
+              dom={{
+                scrollEnabled: true,
+                allowsInlineMediaPlayback: true,
+              }}
+            />
           </View>
         </View>
 
         <View style={styles.panel}>
           <View style={styles.panelHeader}>
-            <Text style={styles.panelTitle}>Class flow</Text>
-            <Text style={styles.panelMeta}>first session</Text>
+            <View>
+              <Text style={styles.panelEyebrow}>Class flow</Text>
+              <Text style={styles.panelTitle}>First session path</Text>
+            </View>
+            <Text style={styles.panelMeta}>intake</Text>
           </View>
           {nextSteps.map((step, index) => (
             <View key={step} style={styles.stepRow}>
@@ -134,16 +143,6 @@ export default function HomeScreen() {
               <Text style={styles.stepText}>{step}</Text>
             </View>
           ))}
-        </View>
-
-        <View style={styles.notificationPanel}>
-          <View>
-            <Text style={styles.panelTitle}>Practice reminders</Text>
-            <Text style={styles.notificationText}>{notificationStatus}</Text>
-          </View>
-          <Pressable style={styles.smallButton} onPress={schedulePracticeReminder}>
-            <Text style={styles.smallButtonText}>Test reminder</Text>
-          </Pressable>
         </View>
       </SafeAreaView>
     </ScrollView>
@@ -159,203 +158,205 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   safeArea: {
-    paddingHorizontal: 20,
     gap: 16,
+    paddingHorizontal: 18,
   },
-  hero: {
-    paddingTop: 28,
-    paddingBottom: 12,
-    gap: 16,
+  topbar: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 14,
+    justifyContent: 'space-between',
+    paddingTop: 26,
+  },
+  brand: {
+    color: '#E9FDFF',
+    fontSize: 20,
+    fontWeight: '900',
+    letterSpacing: 0,
+    textTransform: 'uppercase',
+  },
+  subbrand: {
+    color: '#3FCF8F',
+    fontSize: 11,
+    fontWeight: '900',
+    marginTop: 2,
+    textTransform: 'uppercase',
+  },
+  signOutButton: {
+    borderColor: 'rgba(233, 253, 255, 0.18)',
+    borderRadius: 8,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 40,
+    paddingHorizontal: 12,
+  },
+  signOutButtonText: {
+    color: '#E9FDFF',
+    fontSize: 11,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  statusPanel: {
+    backgroundColor: 'rgba(6, 19, 22, 0.94)',
+    borderColor: 'rgba(63, 207, 143, 0.26)',
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    padding: 14,
+  },
+  statusBlock: {
+    flex: 1,
+    gap: 5,
+  },
+  statusDivider: {
+    backgroundColor: 'rgba(233, 253, 255, 0.1)',
+    marginHorizontal: 10,
+    width: 1,
+  },
+  statusLabel: {
+    color: '#50D8FA',
+    fontSize: 10,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  statusValue: {
+    color: '#E9FDFF',
+    fontSize: 12,
+    fontWeight: '800',
+    lineHeight: 16,
+  },
+  heroPanel: {
+    backgroundColor: 'rgba(63, 207, 143, 0.08)',
+    borderColor: 'rgba(63, 207, 143, 0.22)',
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 14,
+    padding: 18,
   },
   kicker: {
     color: '#3FCF8F',
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '900',
     letterSpacing: 0,
     textTransform: 'uppercase',
   },
   title: {
     color: '#E9FDFF',
-    fontSize: 42,
+    fontSize: 33,
     fontWeight: '900',
     letterSpacing: 0,
-    lineHeight: 42,
+    lineHeight: 35,
     textTransform: 'uppercase',
   },
   lede: {
     color: 'rgba(233, 253, 255, 0.72)',
-    fontSize: 16,
-    lineHeight: 25,
+    fontSize: 15,
+    lineHeight: 23,
   },
   actions: {
     flexDirection: 'row',
-    gap: 10,
     flexWrap: 'wrap',
+    gap: 10,
   },
   primaryButton: {
-    minHeight: 48,
-    justifyContent: 'center',
-    borderRadius: 8,
     backgroundColor: '#3FCF8F',
-    paddingHorizontal: 18,
+    borderRadius: 8,
+    justifyContent: 'center',
+    minHeight: 46,
+    paddingHorizontal: 16,
   },
   primaryButtonText: {
     color: '#02100C',
-    fontSize: 13,
-    fontWeight: '800',
+    fontSize: 12,
+    fontWeight: '900',
     textTransform: 'uppercase',
   },
   secondaryButton: {
-    minHeight: 48,
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(233, 253, 255, 0.16)',
+    borderColor: 'rgba(233, 253, 255, 0.18)',
     borderRadius: 8,
-    paddingHorizontal: 18,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 46,
+    paddingHorizontal: 16,
   },
   secondaryButtonText: {
     color: '#E9FDFF',
-    fontSize: 13,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-  },
-  panel: {
-    gap: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(233, 253, 255, 0.12)',
-    borderRadius: 8,
-    backgroundColor: 'rgba(6, 19, 22, 0.88)',
-    padding: 18,
-  },
-  identityPanel: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(80, 216, 250, 0.2)',
-    borderRadius: 8,
-    backgroundColor: 'rgba(80, 216, 250, 0.08)',
-    padding: 16,
-  },
-  identityLabel: {
-    color: '#50D8FA',
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: '900',
     textTransform: 'uppercase',
   },
-  identityValue: {
-    marginTop: 4,
-    color: '#E9FDFF',
-    fontSize: 14,
+  notificationText: {
+    color: 'rgba(233, 253, 255, 0.65)',
+    fontSize: 12,
     fontWeight: '700',
   },
-  signOutButton: {
-    minHeight: 40,
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(233, 253, 255, 0.16)',
+  embedShell: {
+    backgroundColor: 'rgba(6, 19, 22, 0.94)',
+    borderColor: 'rgba(233, 253, 255, 0.13)',
     borderRadius: 8,
-    paddingHorizontal: 12,
+    borderWidth: 1,
+    gap: 14,
+    overflow: 'hidden',
+    padding: 14,
   },
-  signOutButtonText: {
-    color: '#E9FDFF',
-    fontSize: 12,
-    fontWeight: '800',
-    textTransform: 'uppercase',
+  panel: {
+    backgroundColor: 'rgba(6, 19, 22, 0.92)',
+    borderColor: 'rgba(233, 253, 255, 0.12)',
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 14,
+    padding: 16,
   },
   panelHeader: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: 'row',
     gap: 12,
+    justifyContent: 'space-between',
+  },
+  panelEyebrow: {
+    color: '#50D8FA',
+    fontSize: 10,
+    fontWeight: '900',
+    textTransform: 'uppercase',
   },
   panelTitle: {
     color: '#E9FDFF',
     fontSize: 17,
-    fontWeight: '800',
+    fontWeight: '900',
+    marginTop: 3,
     textTransform: 'uppercase',
   },
   panelMeta: {
-    color: '#50D8FA',
-    fontSize: 12,
-    fontWeight: '700',
+    color: '#F3B95F',
+    fontSize: 11,
+    fontWeight: '900',
     textTransform: 'uppercase',
   },
-  trackList: {
-    gap: 10,
-  },
-  trackCard: {
-    flexDirection: 'row',
-    gap: 12,
+  embedFrame: {
+    backgroundColor: '#02070B',
+    borderColor: 'rgba(63, 207, 143, 0.2)',
     borderRadius: 8,
-    backgroundColor: 'rgba(233, 253, 255, 0.06)',
-    padding: 14,
-  },
-  trackAccent: {
-    width: 4,
-    borderRadius: 8,
-  },
-  trackCopy: {
-    flex: 1,
-    gap: 4,
-  },
-  trackTitle: {
-    color: '#E9FDFF',
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  trackDetail: {
-    color: 'rgba(233, 253, 255, 0.68)',
-    fontSize: 13,
-    lineHeight: 20,
+    borderWidth: 1,
+    height: 580,
+    overflow: 'hidden',
   },
   stepRow: {
+    alignItems: 'flex-start',
+    borderTopColor: 'rgba(233, 253, 255, 0.08)',
+    borderTopWidth: 1,
     flexDirection: 'row',
     gap: 14,
-    alignItems: 'flex-start',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(233, 253, 255, 0.08)',
     paddingTop: 14,
   },
   stepNumber: {
     color: '#F3B95F',
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '900',
   },
   stepText: {
+    color: 'rgba(233, 253, 255, 0.76)',
     flex: 1,
-    color: 'rgba(233, 253, 255, 0.78)',
     fontSize: 14,
     lineHeight: 21,
-  },
-  notificationPanel: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(63, 207, 143, 0.24)',
-    borderRadius: 8,
-    backgroundColor: 'rgba(63, 207, 143, 0.09)',
-    padding: 18,
-  },
-  notificationText: {
-    marginTop: 6,
-    color: 'rgba(233, 253, 255, 0.68)',
-    fontSize: 13,
-  },
-  smallButton: {
-    minHeight: 42,
-    justifyContent: 'center',
-    borderRadius: 8,
-    backgroundColor: '#E9FDFF',
-    paddingHorizontal: 14,
-  },
-  smallButtonText: {
-    color: '#02070B',
-    fontSize: 12,
-    fontWeight: '800',
-    textTransform: 'uppercase',
   },
 });

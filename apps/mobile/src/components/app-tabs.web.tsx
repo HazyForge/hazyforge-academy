@@ -13,6 +13,7 @@ import { ExternalLink } from './external-link';
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
+import { academyBooking } from '@/constants/academy-product';
 import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
 
 export default function AppTabs() {
@@ -26,6 +27,9 @@ export default function AppTabs() {
           </TabTrigger>
           <TabTrigger name="explore" href="/(tabs)/explore" asChild>
             <TabButton>Classes</TabButton>
+          </TabTrigger>
+          <TabTrigger name="contact" href="/(tabs)/contact" asChild>
+            <TabButton>Contact</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>
@@ -60,7 +64,7 @@ export function CustomTabList(props: TabListProps) {
 
         {props.children}
 
-        <ExternalLink href="https://cal.hazyforge.io/palehazy/30min" asChild>
+        <ExternalLink href={academyBooking.baseUrl} asChild>
           <Pressable style={styles.externalPressable}>
             <ThemedText type="link">Book</ThemedText>
             <SymbolView
