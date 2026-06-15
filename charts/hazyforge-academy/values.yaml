@@ -34,6 +34,10 @@ resources:
     memory: 256Mi
 
 env:
+  ACADEMY_API_ALLOWED_ORIGINS: "https://learn.hazyforge.io"
+  ACADEMY_AUTH_ISSUER: "https://hazyforge1-azsbgb.us1.zitadel.cloud"
+  ACADEMY_AUTH_AUDIENCES: ""
+  ACADEMY_AUTH_CLOCK_TOLERANCE_SECONDS: "60"
   CAL_API_BASE_URL: "https://cal.hazyforge.io/api"
   ACADEMY_CAL_USERNAME: "palehazy"
   ACADEMY_CAL_EVENT_TYPE_SLUG: "30min"
