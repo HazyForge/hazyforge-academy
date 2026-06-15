@@ -1,6 +1,6 @@
 import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
 import { createReadStream, existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -15,6 +15,19 @@ const calBookingsApiVersion = process.env.CAL_BOOKINGS_API_VERSION || '2026-02-2
 const calUsername = process.env.ACADEMY_CAL_USERNAME || 'palehazy';
 const calEventTypeSlug = process.env.ACADEMY_CAL_EVENT_TYPE_SLUG || '30min';
 const defaultTimeZone = process.env.ACADEMY_CAL_TIME_ZONE || 'America/Chicago';
+const authIssuer = trimTrailingSlash(
+  process.env.ACADEMY_AUTH_ISSUER || 'https://hazyforge1-azsbgb.us1.zitadel.cloud',
+);
+const allowedAudiences = parseCsv(process.env.ACADEMY_AUTH_AUDIENCES || '');
+const allowedOrigins = parseCsv(
+  process.env.ACADEMY_API_ALLOWED_ORIGINS ||
+    'https://learn.hazyforge.io,http://localhost:8081,http://localhost:8082,http://127.0.0.1:8081,http://127.0.0.1:8082',
+);
+const jwtClockToleranceSeconds = Number(process.env.ACADEMY_AUTH_CLOCK_TOLERANCE_SECONDS || 60);
+
+let cachedOpenIdConfig = null;
+let cachedJwks = null;
+let cachedJwksAt = 0;
 
 const mimeTypes = new Map([
   ['.css', 'text/css; charset=utf-8'],
@@ -32,11 +45,30 @@ function trimTrailingSlash(value) {
   return value.replace(/\/+$/, '');
 }
 
+function parseCsv(value) {
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function isOriginAllowed(origin) {
+  return allowedOrigins.includes('*') || allowedOrigins.includes(origin);
+}
+
+function setCorsHeaders(request, response) {
+  const origin = request.headers.origin;
+  response.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  response.setHeader('Vary', 'Origin');
+
+  if (origin && isOriginAllowed(origin)) {
+    response.setHeader('Access-Control-Allow-Origin', origin);
+  }
+}
+
 function sendJson(response, statusCode, payload) {
   response.writeHead(statusCode, {
-    'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Origin': '*',
     'Content-Type': 'application/json; charset=utf-8',
   });
   response.end(JSON.stringify(payload));
@@ -44,10 +76,146 @@ function sendJson(response, statusCode, payload) {
 
 function sendText(response, statusCode, body) {
   response.writeHead(statusCode, {
-    'Access-Control-Allow-Origin': '*',
     'Content-Type': 'text/plain; charset=utf-8',
   });
   response.end(body);
+}
+
+function decodeBase64Url(value) {
+  const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '=');
+  return Buffer.from(padded, 'base64');
+}
+
+function decodeJwtPart(value) {
+  return JSON.parse(decodeBase64Url(value).toString('utf8'));
+}
+
+function getBearerToken(request) {
+  const header = request.headers.authorization || '';
+  const match = /^Bearer\s+(.+)$/i.exec(header);
+  return match?.[1] ?? null;
+}
+
+async function getOpenIdConfig() {
+  if (cachedOpenIdConfig) return cachedOpenIdConfig;
+
+  const response = await fetch(`${authIssuer}/.well-known/openid-configuration`);
+  if (!response.ok) {
+    throw new Error(`Issuer metadata lookup failed with status ${response.status}.`);
+  }
+
+  const metadata = await response.json();
+  if (typeof metadata.jwks_uri !== 'string' || !metadata.jwks_uri) {
+    throw new Error('Issuer metadata did not include jwks_uri.');
+  }
+
+  cachedOpenIdConfig = metadata;
+  return cachedOpenIdConfig;
+}
+
+async function getJwks() {
+  const now = Date.now();
+  if (cachedJwks && now - cachedJwksAt < 5 * 60 * 1000) {
+    return cachedJwks;
+  }
+
+  const metadata = await getOpenIdConfig();
+  const response = await fetch(metadata.jwks_uri);
+  if (!response.ok) {
+    throw new Error(`JWKS lookup failed with status ${response.status}.`);
+  }
+
+  const jwks = await response.json();
+  if (!Array.isArray(jwks.keys)) {
+    throw new Error('JWKS response did not include keys.');
+  }
+
+  cachedJwks = jwks;
+  cachedJwksAt = now;
+  return cachedJwks;
+}
+
+async function verifyJwt(token) {
+  const parts = token.split('.');
+  if (parts.length !== 3) {
+    throw new Error('Token is not a JWT.');
+  }
+
+  const header = decodeJwtPart(parts[0]);
+  const claims = decodeJwtPart(parts[1]);
+
+  if (header.alg !== 'RS256') {
+    throw new Error('Token algorithm is not accepted.');
+  }
+
+  if (claims.iss !== authIssuer) {
+    throw new Error('Token issuer is not accepted.');
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  if (typeof claims.exp !== 'number' || claims.exp < now - jwtClockToleranceSeconds) {
+    throw new Error('Token has expired.');
+  }
+
+  if (typeof claims.nbf === 'number' && claims.nbf > now + jwtClockToleranceSeconds) {
+    throw new Error('Token is not valid yet.');
+  }
+
+  if (allowedAudiences.length > 0) {
+    const tokenAudiences = Array.isArray(claims.aud) ? claims.aud : [claims.aud].filter(Boolean);
+    const hasAllowedAudience = tokenAudiences.some((audience) => allowedAudiences.includes(audience));
+    if (!hasAllowedAudience) {
+      throw new Error('Token audience is not accepted.');
+    }
+  }
+
+  const jwks = await getJwks();
+  const jwk = jwks.keys.find((key) => key.kid === header.kid && key.kty === 'RSA');
+  if (!jwk) {
+    throw new Error('Token signing key was not found.');
+  }
+
+  const key = await crypto.subtle.importKey(
+    'jwk',
+    jwk,
+    {
+      hash: 'SHA-256',
+      name: 'RSASSA-PKCS1-v1_5',
+    },
+    false,
+    ['verify'],
+  );
+
+  const signature = decodeBase64Url(parts[2]);
+  const data = Buffer.from(`${parts[0]}.${parts[1]}`, 'utf8');
+  const valid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, signature, data);
+  if (!valid) {
+    throw new Error('Token signature is not valid.');
+  }
+
+  return claims;
+}
+
+async function requireAuthenticatedRequest(request, response) {
+  const token = getBearerToken(request);
+  if (!token) {
+    sendJson(response, 401, {
+      status: 'error',
+      message: 'Bearer token is required.',
+    });
+    return null;
+  }
+
+  try {
+    return await verifyJwt(token);
+  } catch (error) {
+    sendJson(response, 401, {
+      status: 'error',
+      message: error instanceof Error ? error.message : 'Token is not accepted.',
+    });
+    return null;
+  }
 }
 
 async function readRequestJson(request) {
@@ -192,7 +360,18 @@ async function serveStatic(response, pathname) {
 
 const server = createServer(async (request, response) => {
   try {
+    setCorsHeaders(request, response);
+
     if (request.method === 'OPTIONS') {
+      const origin = request.headers.origin;
+      if (origin && !isOriginAllowed(origin)) {
+        sendJson(response, 403, {
+          status: 'error',
+          message: 'Origin is not allowed.',
+        });
+        return;
+      }
+
       sendJson(response, 204, {});
       return;
     }
@@ -202,6 +381,11 @@ const server = createServer(async (request, response) => {
     if (url.pathname === '/healthz') {
       sendText(response, 200, 'ok');
       return;
+    }
+
+    if (url.pathname.startsWith('/api/scheduling/')) {
+      const claims = await requireAuthenticatedRequest(request, response);
+      if (!claims) return;
     }
 
     if (url.pathname === '/api/scheduling/config' && request.method === 'GET') {
