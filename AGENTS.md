@@ -19,6 +19,12 @@ The live site is `https://learn.hazyforge.io`.
 - For app changes, publish the source change first, wait for the short `sha-<7>` image to exist, then update the deploy pin to that immutable tag and publish the deploy-pin change.
 - Verify rollout through Anvil's service-account kubeconfig at `CodingFiles/HAZYFORGE/anvil-primaris/secrets/argocd-access-hazy-sites-kubeconfig.yaml`, namespace `hazyforge-academy`, and then smoke check `https://learn.hazyforge.io/healthz`.
 
+## Staged Primaris Migration
+
+- The target bundle is `.hazyforge/clusters/anvil-primaris/namespace/hazyforge-academy/`.
+- Follow its `README.md` for namespace/secret/gateway prerequisites, target verification, and DNS promotion. Hazy Sites remains the live source until cutover is verified.
+- Target `image.digest` takes precedence over `image.tag`. Future target releases must update the immutable digest along with the documentary tag.
+
 ## Academy Product And Theme Workflow
 
 - Before changing either `apps/web` or `apps/mobile` UI, use the repo-local skill at `.agents/skills/hazyforge-academy-product-split/SKILL.md`.
