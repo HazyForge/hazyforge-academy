@@ -1,0 +1,32 @@
+# Appset Values
+helmChartPath: charts/hazyforge-academy
+# Helm Values
+image:
+  repository: ghcr.io/hazyforge/hazyforge-academy
+  digest: sha256:a03877dfe450d9db6cb92c0732096257a3f68f124bd1d1adba1f454d208f773b
+  pullPolicy: Always
+  tag: sha-19d4fe6
+imagePullSecrets:
+  - name: ghcr-creds
+resources:
+  requests:
+    cpu: 25m
+    memory: 96Mi
+  limits:
+    cpu: 300m
+    memory: 256Mi
+service:
+  port: 80
+  containerPort: 80
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+
+# Public gateway backends stay on cloud workers during migration.
+nodeSelector:
+  hazyforge.io/site: hetzner-nbg1
