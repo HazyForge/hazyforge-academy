@@ -25,3 +25,4 @@ readinessProbe:
   httpGet:
     path: /healthz
     port: http
+replicaCount: 0

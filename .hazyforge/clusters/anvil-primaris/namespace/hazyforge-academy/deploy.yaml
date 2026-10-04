@@ -30,3 +30,5 @@ readinessProbe:
 # Public gateway backends stay on cloud workers during migration.
 nodeSelector:
   hazyforge.io/site: hetzner-nbg1
+podAnnotations:
+  migration.hazyforge.io/rebalanced-at: '2026-10-04T07:12:00Z'
