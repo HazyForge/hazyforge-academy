@@ -1,8 +1,21 @@
 # Hazy Sites to Primaris migration
 
-This bundle stages `HazyForge/hazyforge-academy` on Anvil Primaris from the current
-`master` deployment contract. The source Hazy Sites bundle remains available
-until the migration operator verifies the target and retires the source.
+## Public page cutover
+
+The public page at `learn.hazyforge.io` moves to `HazyForge/hazy-sites`
+`apps/academy`. Merge this route retirement only after the new `academy-site`
+pod is Ready with its pinned image digest and its HTTPRoute is Accepted with
+ResolvedRefs. This bundle no longer claims the public hostname after this
+change; the old Academy Deployment, image and other runtime configuration stay
+in place so rollback is a single revert that restores the old route.
+
+The Academy source and deployment bundle are maintained in `hazy-sites`; this
+repo continues to own the old app runtime for rollback. Do not remove the old
+Deployment as part of the route cutover.
+
+This bundle records the previous Anvil Primaris deployment contract for
+`HazyForge/hazyforge-academy`. The current cutover retires only the old public
+route; its Deployment and image remain available for rollback.
 
 ## Runtime mapping
 
@@ -11,13 +24,13 @@ until the migration operator verifies the target and retires the source.
 | Namespace | `hazyforge-academy` | `hazyforge-academy` |
 | Deployment / Service / ServiceAccount | `hazyforge-academy` | `hazyforge-academy` |
 | Helm release | `hazyforge-academy-chart` | `hazyforge-academy-chart` |
-| HTTPRoute | `hazyforge-academy-gateway-route` | `hazyforge-academy-gateway-route` |
+| HTTPRoute | `hazyforge-academy-gateway-route` | Removed by this cutover |
 
 The target names follow the existing Primaris ApplicationSet contract:
 `fullnameOverride` is the namespace and the Helm release is `<namespace>-chart`.
 Service selectors match the target Deployment, and the HTTPRoute backend matches
-the target Service name and port. The route uses `gateway/gateway` listeners
-`https-learn`.
+the target Service name and port. Before this cutover, the route used
+`gateway/gateway` listener `https-learn`.
 
 The image is the exact digest reported by the running Hazy Sites pod on
 2026-10-04:
